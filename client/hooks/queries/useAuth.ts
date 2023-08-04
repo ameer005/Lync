@@ -1,0 +1,193 @@
+import { useMutation } from "@tanstack/react-query";
+import useAxios from "../useAxios";
+import { useRouter } from "next/navigation";
+import useStore from "@/store/useStore";
+import { FieldValues } from "react-hook-form";
+import { Login } from "@/types/api/user";
+
+export const useSignup = () => {
+  const api = useAxios();
+
+  const queryFnc = (userData: FieldValues) => {
+    return api.post("/users/signup", userData);
+  };
+
+  return useMutation(queryFnc, {
+    onSuccess: () => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     type: "success",
+      //     message: "Otp has been sent to your registered email.",
+      //   },
+      // });
+    },
+    onError: (error: any) => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     type: "error",
+      //     message: error.response.data.message,
+      //   },
+      // });
+    },
+  });
+};
+
+export const useActivateAccount = () => {
+  const api = useAxios();
+  const queryFnc = (userData: FieldValues) => {
+    return api.post("/users/activate", userData);
+  };
+
+  return useMutation(queryFnc, {
+    onSuccess: () => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     type: "",
+      //     message: "Account activated successfully",
+      //   },
+      // });
+    },
+    onError: (error: any) => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     type: "error",
+      //     message: error.response.data.message,
+      //   },
+      // });
+    },
+  });
+};
+
+export const useResendActivatonCode = () => {
+  const api = useAxios();
+
+  const resendActivationCode = (userData: any) => {
+    return api.post("/users/sendActivationCode", userData);
+  };
+
+  return useMutation(resendActivationCode, {
+    onSuccess: () => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     message: "check your registered email for activation code",
+      //     type: "",
+      //   },
+      // });
+    },
+    onError: (error: any) => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     message: error.response.data.message,
+      //     type: "error",
+      //   },
+      // });
+    },
+  });
+};
+
+export const useLogin = () => {
+  const router = useRouter();
+  const api = useAxios();
+
+  const setToken = useStore((state) => state.setToken);
+  const setUser = useStore((state) => state.setUser);
+
+  const queryFnc = async (userData: FieldValues) => {
+    const { data } = await api.post<Login>("/auth/login", userData);
+    return data;
+  };
+
+  return useMutation(queryFnc, {
+    onError: (error: any) => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     message: error.response.data.message,
+      //     type: "error",
+      //   },
+      // });
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setToken(data.token);
+      setUser(data.user);
+      router.push("/");
+    },
+  });
+};
+
+export const useLogout = () => {
+  const router = useRouter();
+  const api = useAxios();
+  const removeUser = useStore((state) => state.removeUser);
+
+  const queryFnc = () => {
+    return api.post("/auth/logout");
+  };
+
+  return useMutation(queryFnc, {
+    onSuccess: () => {
+      router.push("/");
+      removeUser();
+    },
+  });
+};
+
+export const useForgotPassword = () => {
+  const api = useAxios();
+
+  const forgotPassword = (userData: { email: string }) => {
+    return api.post("/users/forgotPassword", userData);
+  };
+
+  return useMutation(forgotPassword, {
+    onSuccess: () => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     message: "Otp has been sent to your email",
+      //     type: "",
+      //   },
+      // });
+    },
+  });
+};
+
+export const useValidateForgotPassword = () => {
+  const api = useAxios();
+
+  const validateForgotPassword = (userData: {
+    email: string;
+    code: string;
+    newPassword: string;
+  }) => {
+    return api.post("/users/validateForgotPassword", userData);
+  };
+
+  return useMutation(validateForgotPassword, {
+    onSuccess: () => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     message: "passwrod changed successfully",
+      //     type: "",
+      //   },
+      // });
+    },
+    onError: (error: any) => {
+      // setModalState({
+      //   showToastModal: true,
+      //   toastProperties: {
+      //     message: error.response.data.message,
+      //     type: "error",
+      //   },
+      // });
+    },
+  });
+};
