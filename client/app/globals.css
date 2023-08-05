@@ -85,10 +85,18 @@ input[type="number"] {
 }
 
 .global-x-padding {
-  @apply px-[4rem] xl:px-8 sm:px-3;
+  @apply px-[2rem] md:px-[1.2rem];
 }
 
 .input {
   @apply text-colorText ut-animation w-full rounded-sm bg-transparent
   px-4 py-3 text-xs  font-medium outline-none  placeholder:text-gray-500;
+}
+
+.border-normal {
+  box-shadow: 0 0 0 2px rgba(146, 147, 156, 0.305);
+}
+
+.border-error {
+  box-shadow: 0 0 0 2px rgb(255, 56, 56);
 }

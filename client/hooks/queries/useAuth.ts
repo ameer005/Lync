@@ -7,6 +7,9 @@ import { Login } from "@/types/api/user";
 
 export const useSignup = () => {
   const api = useAxios();
+  const setOptions = useStore((state) => state.setOptions);
+
+  const setModalState = useStore((state) => state.setModalState);
 
   const queryFnc = (userData: FieldValues) => {
     return api.post("/users/signup", userData);
@@ -21,6 +24,7 @@ export const useSignup = () => {
       //     message: "Otp has been sent to your registered email.",
       //   },
       // });
+      setOptions({ authScreen: "Verify" });
     },
     onError: (error: any) => {
       // setModalState({
@@ -36,6 +40,10 @@ export const useSignup = () => {
 
 export const useActivateAccount = () => {
   const api = useAxios();
+
+  const setModalState = useStore((state) => state.setModalState);
+  const setOptions = useStore((state) => state.setOptions);
+
   const queryFnc = (userData: FieldValues) => {
     return api.post("/users/activate", userData);
   };
@@ -49,6 +57,7 @@ export const useActivateAccount = () => {
       //     message: "Account activated successfully",
       //   },
       // });
+      setOptions({ authScreen: "Login" });
     },
     onError: (error: any) => {
       // setModalState({
@@ -64,6 +73,7 @@ export const useActivateAccount = () => {
 
 export const useResendActivatonCode = () => {
   const api = useAxios();
+  const setModalState = useStore((state) => state.setModalState);
 
   const resendActivationCode = (userData: any) => {
     return api.post("/users/sendActivationCode", userData);
@@ -97,6 +107,8 @@ export const useLogin = () => {
 
   const setToken = useStore((state) => state.setToken);
   const setUser = useStore((state) => state.setUser);
+  const setModalState = useStore((state) => state.setModalState);
+  const setOptions = useStore((state) => state.setOptions);
 
   const queryFnc = async (userData: FieldValues) => {
     const { data } = await api.post<Login>("/auth/login", userData);
@@ -105,6 +117,9 @@ export const useLogin = () => {
 
   return useMutation(queryFnc, {
     onError: (error: any) => {
+      if (error.response.status === 403) {
+        setOptions({ authScreen: "Verify" });
+      }
       // setModalState({
       //   showToastModal: true,
       //   toastProperties: {
@@ -117,7 +132,9 @@ export const useLogin = () => {
       localStorage.setItem("user", JSON.stringify(data.user));
       setToken(data.token);
       setUser(data.user);
-      router.push("/");
+      setModalState({ showAuthModal: false });
+      // TODO hard reload
+      location.reload();
     },
   });
 };
@@ -141,6 +158,8 @@ export const useLogout = () => {
 
 export const useForgotPassword = () => {
   const api = useAxios();
+  const setOptions = useStore((state) => state.setOptions);
+  const setModalState = useStore((state) => state.setModalState);
 
   const forgotPassword = (userData: { email: string }) => {
     return api.post("/users/forgotPassword", userData);
@@ -148,6 +167,7 @@ export const useForgotPassword = () => {
 
   return useMutation(forgotPassword, {
     onSuccess: () => {
+      setOptions({ authScreen: "Validate Forgot" });
       // setModalState({
       //   showToastModal: true,
       //   toastProperties: {
@@ -161,6 +181,8 @@ export const useForgotPassword = () => {
 
 export const useValidateForgotPassword = () => {
   const api = useAxios();
+  const setOptions = useStore((state) => state.setOptions);
+  const setModalState = useStore((state) => state.setModalState);
 
   const validateForgotPassword = (userData: {
     email: string;
@@ -172,6 +194,7 @@ export const useValidateForgotPassword = () => {
 
   return useMutation(validateForgotPassword, {
     onSuccess: () => {
+      setOptions({ authScreen: "Login" });
       // setModalState({
       //   showToastModal: true,
       //   toastProperties: {
