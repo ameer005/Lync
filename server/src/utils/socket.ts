@@ -1,29 +1,24 @@
-interface UserDocument {
-  _id: string;
-  email: string;
-  name: string;
-  username: string;
-  adminAccess: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  socketId: string;
-}
+import { Room, GuestUser } from "../types/socket-types";
 
-let users: UserDocument[] = [];
+const rooms: { [roomName: string]: Room } = {};
 
-export const addSocketUser = (userData: UserDocument, socketId: string) => {
-  !users.some((user) => user._id == userData?._id) &&
-    users.push({ ...userData, socketId });
+export const getRoom = (roomId: string) => {
+  return rooms[roomId];
 };
 
-export const getSocketUser = (userId: string) => {
-  return users.find((user) => user._id === userId);
+export const addRoom = (data: Room) => {
+  if (!getRoom(data.id)) {
+    rooms[data.id] = data;
+  }
 };
 
-export const getSocketUsers = () => {
-  return users;
+export const addUserToRoom = (roomId: string, user: GuestUser) => {
+  if (!getRoom(roomId)) {
+    rooms[roomId].members.push(user);
+  }
 };
 
-export const removeSocketUser = (userId: string) => {
-  users = users.filter((user) => user.socketId !== userId);
+export const getRoomMembers = (roomId: string) => {
+  const room = getRoom(roomId);
+  return room.members;
 };

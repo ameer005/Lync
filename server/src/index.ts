@@ -12,9 +12,10 @@ import errorHandlerMiddleware from "./middleware/error/errorHandler";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import {
-  addSocketUser,
-  getSocketUsers,
-  removeSocketUser,
+  getRoom,
+  addRoom,
+  addUserToRoom,
+  getRoomMembers,
 } from "./utils/socket";
 const app = express();
 const server = createServer(app);
@@ -26,6 +27,7 @@ const io = new Server(server, {
 
 import userRouter from "./routes/user/userRoutes";
 import authRouter from "./routes/auth/authRoutes";
+import { GuestUser, Room } from "./types/socket-types";
 
 dotenv.config();
 
@@ -70,30 +72,33 @@ app.use((req, res) => {
 });
 
 io.on("connection", (socket) => {
-  socket.on("add-users", (userData) => {
-    addSocketUser(userData, socket.id);
-    io.emit("get-users", getSocketUsers());
-  });
-
-  socket.on("disconnect", () => {
-    removeSocketUser(socket.id);
-    io.emit("get-users", getSocketUsers());
-  });
-
   // rooms
-  socket.on("create-room", (roomId) => {
+  socket.on("create-room", (roomId: string, data: Room, cb) => {
     // console.log(`creating room ${roomId}`);
     socket.join(roomId);
+    if (!getRoom(data.id)) {
+      addRoom(data);
+      addUserToRoom(roomId, {
+        id: data.id,
+        socketId: socket.id,
+        name: data.host.name,
+      });
+    }
   });
 
-  socket.on("join-room", (roomId, cb) => {
-    if (io.sockets.adapter.rooms.get(roomId)) {
+  socket.on("join-room", (roomId, user: GuestUser, cb) => {
+    if (getRoom(roomId)) {
       socket.join(roomId);
-      socket.to(roomId).emit("joined", true);
-      cb({ status: "success" });
+      addUserToRoom(roomId, user);
+      io.to(roomId).emit("room-members", getRoomMembers(roomId));
+      cb({ status: "success", message: "Joined room successfully" });
     } else {
       cb({ status: "failed", message: "room doesn't exist" });
     }
+  });
+
+  socket.on("get-room-members", (roomId) => {
+    io.to(roomId).emit("room-members", getRoomMembers(roomId));
   });
 
   // messages
