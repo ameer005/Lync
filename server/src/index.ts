@@ -16,6 +16,7 @@ import {
   addRoom,
   addMemberToRoom,
   getRoomMembers,
+  removeMemberFromRoom,
 } from "./utils/socket";
 const app = express();
 const server = createServer(app);
@@ -93,7 +94,7 @@ io.on("connection", (socket) => {
       addMemberToRoom(roomId, { ...user, socketId: socket.id });
       io.to(roomId).emit("room-members", getRoomMembers(roomId));
 
-      console.log(getRoom(roomId));
+      // console.log(getRoom(roomId));
       cb({ status: "success", message: "Joined room successfully" });
     } else {
       cb({ status: "failed", message: "room doesn't exist" });
@@ -113,10 +114,18 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("leave-room", (roomId) => {
+    // console.log("YOOO LEAVING ROOM");
+    removeMemberFromRoom(roomId, socket.id);
+    // console.log(getRoom(roomId));
+  });
+
   // messages
   socket.on("send-message", (roomId, data) => {
     io.to(roomId).emit("get-message", data);
   });
+
+  socket.on("disconnect", () => {});
 });
 
 app.use(errorHandlerMiddleware);

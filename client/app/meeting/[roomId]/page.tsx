@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Lobby from "./Lobby";
+import MeetingBoard from "./MeetingBoard";
 
 interface PageProps {
   params: {
@@ -16,7 +17,11 @@ const MeetingPage = ({ params }: PageProps) => {
     return <Lobby roomId={params.roomId} setIsJoined={setIsJoined} />;
   }
 
-  return <div>yo fuckin meetin</div>;
+  return (
+    <div>
+      <MeetingBoard roomId={params.roomId} />
+    </div>
+  );
 };
 
 export default MeetingPage;

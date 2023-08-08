@@ -22,12 +22,22 @@ export const addRoom = (data: Room) => {
 
 export const addMemberToRoom = (roomId: string, user: GuestUser) => {
   const room = getRoom(roomId);
+  // TODO
+  // if user exist change socket id and actual id in collection
   if (room) {
     const isUserInRoom = isUserAlreadyInRoom(room.members, user.socketId);
 
     if (!isUserInRoom) {
       rooms[roomId].members.push(user);
     }
+  }
+};
+
+export const removeMemberFromRoom = (roomId: string, userSocketId: string) => {
+  if (getRoom(roomId)) {
+    rooms[roomId].members = rooms[roomId]?.members.filter(
+      (mem) => mem.socketId !== userSocketId
+    );
   }
 };
 
