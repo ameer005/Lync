@@ -14,7 +14,7 @@ import { Server } from "socket.io";
 import {
   getRoom,
   addRoom,
-  addUserToRoom,
+  addMemberToRoom,
   getRoomMembers,
 } from "./utils/socket";
 const app = express();
@@ -78,19 +78,22 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     if (!getRoom(data.id)) {
       addRoom(data);
-      addUserToRoom(roomId, {
+      addMemberToRoom(roomId, {
         id: data.id,
         socketId: socket.id,
         name: data.host.name,
       });
+      cb({ status: "success" });
     }
   });
 
   socket.on("join-room", (roomId, user: GuestUser, cb) => {
     if (getRoom(roomId)) {
       socket.join(roomId);
-      addUserToRoom(roomId, user);
+      addMemberToRoom(roomId, { ...user, socketId: socket.id });
       io.to(roomId).emit("room-members", getRoomMembers(roomId));
+
+      console.log(getRoom(roomId));
       cb({ status: "success", message: "Joined room successfully" });
     } else {
       cb({ status: "failed", message: "room doesn't exist" });
@@ -99,6 +102,15 @@ io.on("connection", (socket) => {
 
   socket.on("get-room-members", (roomId) => {
     io.to(roomId).emit("room-members", getRoomMembers(roomId));
+  });
+
+  socket.on("get-room", (roomId, cb) => {
+    const room = getRoom(roomId);
+    if (room) {
+      cb({ status: "success" });
+    } else {
+      cb({ status: "failed" });
+    }
   });
 
   // messages
