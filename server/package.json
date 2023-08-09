@@ -24,6 +24,7 @@
     "express-mongo-sanitize": "^2.2.0",
     "helmet": "^6.0.0",
     "jsonwebtoken": "^9.0.1",
+    "mediasoup": "^3.12.8",
     "minio": "^7.1.0",
     "mongoose": "^6.5.4",
     "morgan": "^1.10.0",

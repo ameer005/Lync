@@ -11,13 +11,7 @@ import connect from "./db/connect";
 import errorHandlerMiddleware from "./middleware/error/errorHandler";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import {
-  getRoom,
-  addRoom,
-  addMemberToRoom,
-  getRoomMembers,
-  removeMemberFromRoom,
-} from "./utils/socket";
+
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
@@ -28,7 +22,7 @@ const io = new Server(server, {
 
 import userRouter from "./routes/user/userRoutes";
 import authRouter from "./routes/auth/authRoutes";
-import { GuestUser, Room } from "./types/socket-types";
+import { webSockets } from "./lib/web-sockets";
 
 dotenv.config();
 
@@ -72,62 +66,10 @@ app.use((req, res) => {
   });
 });
 
-io.on("connection", (socket) => {
-  // rooms
-  socket.on("create-room", (roomId: string, data: Room, cb) => {
-    // console.log(`creating room ${roomId}`);
-    socket.join(roomId);
-    if (!getRoom(data.id)) {
-      addRoom(data);
-      addMemberToRoom(roomId, {
-        id: data.id,
-        socketId: socket.id,
-        name: data.host.name,
-      });
-      cb({ status: "success" });
-    }
-  });
+// function for handling socket events
+webSockets(io);
 
-  socket.on("join-room", (roomId, user: GuestUser, cb) => {
-    if (getRoom(roomId)) {
-      socket.join(roomId);
-      addMemberToRoom(roomId, { ...user, socketId: socket.id });
-      io.to(roomId).emit("room-members", getRoomMembers(roomId));
-
-      // console.log(getRoom(roomId));
-      cb({ status: "success", message: "Joined room successfully" });
-    } else {
-      cb({ status: "failed", message: "room doesn't exist" });
-    }
-  });
-
-  socket.on("get-room-members", (roomId) => {
-    io.to(roomId).emit("room-members", getRoomMembers(roomId));
-  });
-
-  socket.on("get-room", (roomId, cb) => {
-    const room = getRoom(roomId);
-    if (room) {
-      cb({ status: "success" });
-    } else {
-      cb({ status: "failed" });
-    }
-  });
-
-  socket.on("leave-room", (roomId) => {
-    // console.log("YOOO LEAVING ROOM");
-    removeMemberFromRoom(roomId, socket.id);
-    // console.log(getRoom(roomId));
-  });
-
-  // messages
-  socket.on("send-message", (roomId, data) => {
-    io.to(roomId).emit("get-message", data);
-  });
-
-  socket.on("disconnect", () => {});
-});
-
+// handeling global errors
 app.use(errorHandlerMiddleware);
 
 const PORT = process.env.PORT || 5000;
