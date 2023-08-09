@@ -1,15 +1,17 @@
 import { Room, GuestUser } from "../types/socket-types";
+import { Producer, Transport } from "mediasoup/node/lib/types";
 
+//TODO replace with map
 const rooms: { [roomName: string]: Room } = {};
+const producers: Map<string, Producer> = new Map();
+const transports: Map<string, Transport> = new Map();
 
-//helpers
+// ROOM FUNCTIONS
 const isUserAlreadyInRoom = (members: GuestUser[], socketId: string) => {
   const member = members.find((mem) => mem.socketId === socketId);
-
   return member;
 };
 
-//main functions
 export const getRoom = (roomId: string) => {
   return rooms[roomId];
 };
@@ -45,3 +47,5 @@ export const getRoomMembers = (roomId: string) => {
   const room = getRoom(roomId);
   return room.members;
 };
+
+// PRODUCERS FUNCTIONS

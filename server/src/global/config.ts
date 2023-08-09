@@ -5,7 +5,7 @@ import os from "os";
 
 export const config = {
   listenIp: "0.0.0.0",
-  listenPort: 5000,
+  listenPort: process.env.PORT || 5000,
 
   mediasoup: {
     numWorkers: Object.keys(os.cpus()).length,
@@ -43,5 +43,7 @@ export const config = {
         announcedIp: "127.0.0.1", //replace with public ip if hosting
       },
     ] as TransportListenIp[],
+    maxIncomeBitrate: 1500000,
+    initialAvailableOutgoingBitrate: 1000000,
   },
 } as const;

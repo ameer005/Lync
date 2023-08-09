@@ -22,7 +22,7 @@ const io = new Server(server, {
 
 import userRouter from "./routes/user/userRoutes";
 import authRouter from "./routes/auth/authRoutes";
-import { webSockets } from "./lib/web-sockets";
+import { webSockets } from "./lib/socket/web-sockets";
 
 dotenv.config();
 

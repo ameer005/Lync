@@ -6,12 +6,17 @@ import {
   addMemberToRoom,
   getRoomMembers,
   removeMemberFromRoom,
-} from "../utils/socket";
-import { Room, GuestUser } from "../types/socket-types";
-import { createWorker } from "./worker";
-import { Router } from "mediasoup/node/lib/types";
+} from "../../global/states";
+import { Room, GuestUser } from "../../types/socket-types";
+import { createWorker } from "../mediasoup/worker";
+import { Router, Transport, Producer } from "mediasoup/node/lib/types";
+import { createWebRtcTransport } from "../mediasoup/createWebRtcTransport";
 
+// TODO convert these to map
+// so it can store multiple states
 let mediasoupRouter: Router;
+let producerTransport: Transport;
+let producer: Producer;
 
 const webSockets = async (
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
@@ -23,9 +28,42 @@ const webSockets = async (
   }
 
   io.on("connection", (socket) => {
-    // Mediasoup Events
+    // sending rtp capabilities to user
+    // so there is no mismatch between server format and client format
     socket.on("get-router-rtp-caps", (cb) => {
       cb({ data: mediasoupRouter.rtpCapabilities });
+    });
+
+    // creating producer transport
+    socket.on("create-producer-transport", async (cb) => {
+      try {
+        const { params, transport } = await createWebRtcTransport(
+          mediasoupRouter
+        );
+
+        producerTransport = transport;
+        cb({ status: "success", params });
+      } catch (error) {
+        console.error(error);
+        cb({ status: "failed", message: error });
+      }
+    });
+
+    // connecting transport
+    socket.on("connect-producer-transport", async (dtlsParameters, cb) => {
+      await producerTransport.connect({ dtlsParameters });
+      cb({ status: "success" });
+    });
+
+    // sharing media
+    // TODO do this when joining room
+    socket.on("producer", async (roomId, params, cb) => {
+      const { kind, rtpParameters } = params;
+      producer = await producerTransport.produce({ kind, rtpParameters });
+
+      // notifying everyone that new memeber has joined
+      socket.to(roomId).emit("new-producer", "new user");
+      cb({ status: "success", producerId: producer.id });
     });
 
     // Normal events
