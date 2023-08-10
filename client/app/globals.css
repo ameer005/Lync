@@ -100,3 +100,7 @@ input[type="number"] {
 .border-error {
   box-shadow: 0 0 0 2px rgb(255, 56, 56);
 }
+
+.video-height {
+  height: calc(0.5626 * 100%);
+}

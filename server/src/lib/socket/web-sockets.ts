@@ -16,6 +16,7 @@ import { createWebRtcTransport } from "../mediasoup/createWebRtcTransport";
 // so it can store multiple states
 let mediasoupRouter: Router;
 let producerTransport: Transport;
+let consumerTransport: Transport;
 let producer: Producer;
 
 const webSockets = async (
@@ -57,7 +58,7 @@ const webSockets = async (
 
     // sharing media
     // TODO do this when joining room
-    socket.on("producer", async (roomId, params, cb) => {
+    socket.on("produce", async (roomId, params, cb) => {
       const { kind, rtpParameters } = params;
       producer = await producerTransport.produce({ kind, rtpParameters });
 
@@ -65,6 +66,28 @@ const webSockets = async (
       socket.to(roomId).emit("new-producer", "new user");
       cb({ status: "success", producerId: producer.id });
     });
+
+    socket.on("create-consumer-transport", async (data, cb) => {
+      try {
+        // TODO store it inside global transport map
+        const { transport, params } = await createWebRtcTransport(
+          mediasoupRouter
+        );
+        consumerTransport = transport;
+
+        cb({ status: "success", params });
+      } catch (error) {
+        cb({ status: "failed", error });
+        console.error(error);
+      }
+    });
+
+    socket.on("connect-consumer-transport", async (dtlsParameters, cb) => {
+      await consumerTransport.connect({ dtlsParameters });
+      cb({ status: "success" });
+    });
+
+    socket.on("consume", () => {});
 
     // Normal events
     socket.on("create-room", (roomId: string, data: Room, cb) => {

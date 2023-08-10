@@ -2,19 +2,19 @@ import { Router } from "mediasoup/node/lib/types";
 import { config } from "../../global/config";
 
 const createWebRtcTransport = async (mediasoupRouter: Router) => {
-  const { initialAvailableOutgoingBitrate, maxIncomeBitrate } =
-    config.webRtcTransport;
+  const { initialAvailableOutgoingBitrate, maxIncomingBitrate } =
+    config.mediasoup.webRtcTransportOptions;
   const transport = await mediasoupRouter.createWebRtcTransport({
-    listenIps: config.webRtcTransport.listenIps,
+    listenIps: config.mediasoup.webRtcTransportOptions.listenIps,
     enableUdp: true,
     enableTcp: true,
     preferUdp: true,
     initialAvailableOutgoingBitrate,
   });
 
-  if (maxIncomeBitrate) {
+  if (maxIncomingBitrate) {
     try {
-      await transport.setMaxIncomingBitrate(maxIncomeBitrate);
+      await transport.setMaxIncomingBitrate(maxIncomingBitrate);
     } catch (error) {
       console.error(error);
     }

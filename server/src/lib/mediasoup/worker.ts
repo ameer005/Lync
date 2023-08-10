@@ -26,7 +26,7 @@ const createWorker = async () => {
   });
 
   const mediasoupRouter = await worker.createRouter({
-    mediaCodecs: config.router.mediaCodecs,
+    mediaCodecs: config.mediasoup.router.mediaCodecs,
   });
 
   return mediasoupRouter;

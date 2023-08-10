@@ -1,10 +1,17 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import useStore from "@/store/useStore";
 import usePageLoaded from "@/hooks/usePageLoaded";
 import BtnPrimary from "@/components/ui/buttons/BtnPrimary";
+import VideoControlBtn from "@/components/ui/buttons/VideoControlBtn";
+import {
+  BiVideo,
+  BiVideoOff,
+  BiMicrophone,
+  BiMicrophoneOff,
+} from "react-icons/bi";
 
 interface ComponentProps {
   setIsJoined: React.Dispatch<React.SetStateAction<boolean>>;
@@ -17,12 +24,22 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
   const [name, setName] = useState("");
   const socket = useStore((state) => state.socket);
   const router = useRouter();
+  const me = useStore((state) => state.me);
+  const setMeetingData = useStore((state) => state.setMeetingData);
+  const localStream = useStore((state) => state.localStream);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     if (user) {
       setName(user.name);
     }
   }, []);
+
+  useEffect(() => {
+    if (localStream && videoRef.current) {
+      videoRef.current.srcObject = localStream;
+    }
+  }, [localStream]);
 
   const onJoinRoom = () => {
     if (!name) return;
@@ -42,12 +59,58 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
       }
     });
   };
+
   return (
     <div className="h-screen w-full flex justify-center">
       <div className="h-full w-full max-w-[77rem] flex ">
         {/* screen */}
-        <div className="flex-1 flex items-center px-4 ">
-          <div className="h-[28rem] w-full bg-black rounded-lg"></div>
+        <div className="flex-1 w-full  flex items-center px-4 ">
+          <div className="w-full max-w-[90%] video-height overflow-clip bg-black   relative rounded-lg">
+            {localStream ? (
+              <>
+                <video
+                  className="h-full w-full object-cover"
+                  autoPlay
+                  muted
+                  playsInline
+                  ref={videoRef}
+                />
+
+                {/* video controls */}
+                <div className="absolute left-[50%] flex items-center gap-3 -translate-x-[50%] bottom-3">
+                  <VideoControlBtn
+                    className={`h-14 w-14 text-2xl border-2  ut-animation  ${
+                      me.shareCam
+                        ? "border-zinc-500 hover:bg-colorText/20 "
+                        : "bg-red-500 border-transparent"
+                    }`}
+                    falseLogo={<BiVideoOff />}
+                    state={me.shareCam}
+                    trueLogo={<BiVideo />}
+                    onClick={() => {
+                      setMeetingData({ me: { ...me, shareCam: !me.shareCam } });
+                    }}
+                  />
+
+                  <VideoControlBtn
+                    className={`h-14 w-14 text-2xl border-2  ut-animation  ${
+                      me.shareMic
+                        ? "border-zinc-500 hover:bg-colorText/20 "
+                        : "bg-red-500 border-transparent"
+                    }`}
+                    falseLogo={<BiMicrophoneOff />}
+                    state={me.shareMic}
+                    trueLogo={<BiMicrophone />}
+                    onClick={() => {
+                      setMeetingData({ me: { ...me, shareMic: !me.shareMic } });
+                    }}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="bg-black absolute inset-0"></div>
+            )}
+          </div>
         </div>
 
         {/*  */}

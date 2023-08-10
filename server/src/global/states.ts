@@ -1,10 +1,17 @@
 import { Room, GuestUser } from "../types/socket-types";
-import { Producer, Transport } from "mediasoup/node/lib/types";
+import {
+  Consumer,
+  Producer,
+  Transport,
+  Worker,
+  Router,
+} from "mediasoup/node/lib/types";
 
 //TODO replace with map
 const rooms: { [roomName: string]: Room } = {};
 const producers: Map<string, Producer> = new Map();
 const transports: Map<string, Transport> = new Map();
+const consumers: Map<string, Consumer> = new Map();
 
 // ROOM FUNCTIONS
 const isUserAlreadyInRoom = (members: GuestUser[], socketId: string) => {

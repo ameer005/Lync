@@ -11,6 +11,7 @@ import connect from "./db/connect";
 import errorHandlerMiddleware from "./middleware/error/errorHandler";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { config } from "./global/config";
 
 const app = express();
 const server = createServer(app);
@@ -72,12 +73,11 @@ webSockets(io);
 // handeling global errors
 app.use(errorHandlerMiddleware);
 
-const PORT = process.env.PORT || 5000;
 const start = async () => {
   try {
     await connect(process.env.MONGO_URL!);
-    server.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+    server.listen(config.https.listenPort, () => {
+      console.log(`Server is running on port ${config.https.listenPort}`);
     });
   } catch (error) {
     console.log(error);

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
+import useStateInit from "@/hooks/useStateInit";
 import Lobby from "./Lobby";
 import MeetingBoard from "./MeetingBoard";
 
@@ -12,6 +13,8 @@ interface PageProps {
 
 const MeetingPage = ({ params }: PageProps) => {
   const [isJoined, setIsJoined] = useState(false);
+  // initializing rooms data
+  useStateInit();
 
   if (!isJoined) {
     return <Lobby roomId={params.roomId} setIsJoined={setIsJoined} />;
