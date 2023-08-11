@@ -24,9 +24,9 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
   const [name, setName] = useState("");
   const socket = useStore((state) => state.socket);
   const router = useRouter();
-  const me = useStore((state) => state.me);
-  const setMeetingData = useStore((state) => state.setMeetingData);
-  const localStream = useStore((state) => state.localStream);
+  const localPeer = useStore((state) => state.localPeer);
+  const setLocalPeerData = useStore((state) => state.setLocalPeerData);
+  const { mediaStream } = useStore((state) => state.localMedia);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
@@ -36,10 +36,10 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
   }, []);
 
   useEffect(() => {
-    if (localStream && videoRef.current) {
-      videoRef.current.srcObject = localStream;
+    if (mediaStream && videoRef.current) {
+      videoRef.current.srcObject = mediaStream;
     }
-  }, [localStream]);
+  }, [mediaStream]);
 
   const onJoinRoom = () => {
     if (!name) return;
@@ -64,9 +64,9 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
     <div className="h-screen w-full flex justify-center">
       <div className="h-full w-full max-w-[77rem] flex ">
         {/* screen */}
-        <div className="flex-1 w-full  flex items-center px-4 ">
-          <div className="w-full max-w-[90%] video-height overflow-clip bg-black   relative rounded-lg">
-            {localStream ? (
+        <div className="flex-1 w-full  flex items-center justify-center px-4 ">
+          <div className="w-full max-w-[90%]  video-height overflow-clip bg-black   relative rounded-lg">
+            {mediaStream ? (
               <>
                 <video
                   className="h-full w-full object-cover"
@@ -76,33 +76,39 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
                   ref={videoRef}
                 />
 
-                {/* video controls */}
+                {/* Video Controls */}
                 <div className="absolute left-[50%] flex items-center gap-3 -translate-x-[50%] bottom-3">
                   <VideoControlBtn
                     className={`h-14 w-14 text-2xl border-2  ut-animation  ${
-                      me.shareCam
+                      localPeer.shareCam
                         ? "border-zinc-500 hover:bg-colorText/20 "
                         : "bg-red-500 border-transparent"
                     }`}
                     falseLogo={<BiVideoOff />}
-                    state={me.shareCam}
+                    state={localPeer.shareCam}
                     trueLogo={<BiVideo />}
                     onClick={() => {
-                      setMeetingData({ me: { ...me, shareCam: !me.shareCam } });
+                      setLocalPeerData({
+                        ...localPeer,
+                        shareCam: !localPeer.shareCam,
+                      });
                     }}
                   />
 
                   <VideoControlBtn
                     className={`h-14 w-14 text-2xl border-2  ut-animation  ${
-                      me.shareMic
+                      localPeer.shareMic
                         ? "border-zinc-500 hover:bg-colorText/20 "
                         : "bg-red-500 border-transparent"
                     }`}
                     falseLogo={<BiMicrophoneOff />}
-                    state={me.shareMic}
+                    state={localPeer.shareMic}
                     trueLogo={<BiMicrophone />}
                     onClick={() => {
-                      setMeetingData({ me: { ...me, shareMic: !me.shareMic } });
+                      setLocalPeerData({
+                        ...localPeer,
+                        shareMic: !localPeer.shareMic,
+                      });
                     }}
                   />
                 </div>

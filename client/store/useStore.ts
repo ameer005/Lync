@@ -6,7 +6,7 @@ import modalSlice, { ModalSlice } from "./slices/modalSlice";
 import dataSlice, { DataSlice } from "./slices/dataSlice";
 import meetingSlice, { MeetingSlice } from "./slices/meetingSlice";
 
-type UseStore = UserSlice &
+export type UseStore = UserSlice &
   SwitchStateSlice &
   ModalSlice &
   DataSlice &
