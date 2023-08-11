@@ -24,7 +24,7 @@ module.exports = {
 
     screens: {
       "2xl": { max: "1200px" },
-      xl: { max: "1150px" },
+      xl: { max: "1000px" },
       lg: { max: "750px" },
       md: { max: "650px" },
       sm: { max: "500px" },

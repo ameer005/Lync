@@ -62,14 +62,14 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
 
   return (
     <div className="h-screen w-full flex justify-center">
-      <div className="h-full w-full max-w-[77rem] flex ">
+      <div className="h-full w-full max-w-[77rem] xl:flex-col xl:gap-8 xl:pt-10  flex ">
         {/* screen */}
-        <div className="flex-1 w-full  flex items-center justify-center px-4 ">
-          <div className="w-full max-w-[90%]  video-height overflow-clip bg-black   relative rounded-lg">
+        <div className="w-full    flex items-center justify-center px-4 md:px-0  ">
+          <div className="w-full responsive-video-container max-w-[90%] xl:max-w-[100%]   overflow-clip bg-black md:rounded-none   relative rounded-lg">
             {mediaStream ? (
               <>
                 <video
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover responsive-video"
                   autoPlay
                   muted
                   playsInline
@@ -79,7 +79,7 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
                 {/* Video Controls */}
                 <div className="absolute left-[50%] flex items-center gap-3 -translate-x-[50%] bottom-3">
                   <VideoControlBtn
-                    className={`h-14 w-14 text-2xl border-2  ut-animation  ${
+                    className={`h-14 w-14 sm:h-10 sm:w-10 text-lg border-2  ut-animation  ${
                       localPeer.shareCam
                         ? "border-zinc-500 hover:bg-colorText/20 "
                         : "bg-red-500 border-transparent"
@@ -96,7 +96,7 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
                   />
 
                   <VideoControlBtn
-                    className={`h-14 w-14 text-2xl border-2  ut-animation  ${
+                    className={`h-14 w-14 sm:h-10 sm:w-10 text-lg border-2  ut-animation  ${
                       localPeer.shareMic
                         ? "border-zinc-500 hover:bg-colorText/20 "
                         : "bg-red-500 border-transparent"
@@ -120,10 +120,10 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
         </div>
 
         {/*  */}
-        <div className="w-[39%] px-4 flex gap-7 flex-col justify-center items-center">
+        <div className="w-[39%] xl:w-full px-4 flex gap-7 sm:gap-4 flex-col justify-center items-center">
           <div className="w-full">
             {isPageLoaded && user ? (
-              <div className="font-medium text-xl text-center">
+              <div className="font-medium text-xl sm:text-lg text-center">
                 Ready to join?
               </div>
             ) : (
@@ -146,7 +146,7 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
           <BtnPrimary
             onClick={onJoinRoom}
             isLoading={false}
-            className="text-colorBg text-base rounded-md"
+            className="text-colorBg sm:py-2 text-base rounded-md"
             name="Join"
           />
         </div>
