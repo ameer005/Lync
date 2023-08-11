@@ -1,11 +1,12 @@
 "useclient";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useStore from "@/store/useStore";
 
 const useRoomClient = () => {
   const setLocalMediaData = useStore((state) => state.setLocalMediaData);
   const localMedia = useStore((state) => state.localMedia);
   const localPeer = useStore((state) => state.localPeer);
+  const [cleanupState, setcleanupState] = useState<MediaStream | null>(null);
 
   //**************************USE EFFECTS**************************//
 
@@ -14,7 +15,13 @@ const useRoomClient = () => {
     startLocalStream();
   }, []);
 
-  // Working | toggling video and audio
+  // clean up
+  useEffect(() => {
+    return () => {
+      cleanupLocalMedia();
+    };
+  }, [localMedia]);
+
   useEffect(() => {
     toggleLocalStreamControls();
   }, [localPeer.shareCam, localPeer.shareMic]);
@@ -33,6 +40,7 @@ const useRoomClient = () => {
 
       const audioTrack = mediaStream.getAudioTracks()[0];
       const videoTrack = mediaStream.getVideoTracks()[0];
+      setcleanupState(mediaStream);
       setLocalMediaData({ mediaStream, audioTrack, videoTrack });
     } catch (error) {
       console.error(error);
@@ -43,6 +51,19 @@ const useRoomClient = () => {
     if (localMedia.audioTrack && localMedia.videoTrack) {
       localMedia.audioTrack.enabled = localPeer.shareMic;
       localMedia.videoTrack.enabled = localPeer.shareCam;
+    }
+  };
+
+  const cleanupLocalMedia = () => {
+    if (localMedia.mediaStream) {
+      localMedia.mediaStream.getTracks().forEach((track) => {
+        track.stop();
+      });
+      setLocalMediaData({
+        mediaStream: null,
+        audioTrack: null,
+        videoTrack: null,
+      });
     }
   };
 
