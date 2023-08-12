@@ -168,6 +168,10 @@ class Room {
     return producerList;
   }
 
+  isPeerInRoom(socketId: string) {
+    return this.peers.has(socketId);
+  }
+
   toJson() {
     return {
       id: this.roomId,

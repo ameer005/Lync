@@ -51,6 +51,7 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
     socket.emit("join-room", roomId, payload, (res: any) => {
       if (res.status === "success") {
         setIsJoined(true);
+        // console.log(res.members);
       } else {
         // TODO
         // implement toas notification

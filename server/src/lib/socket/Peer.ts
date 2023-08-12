@@ -66,7 +66,7 @@ class Peer {
   ) {
     let consumerTransport = this.transport.get(consumerTransportId);
 
-    let consumer = null;
+    let consumer: Consumer | undefined;
 
     try {
       consumer = await consumerTransport?.consume({

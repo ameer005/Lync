@@ -26,3 +26,5 @@ export type IO = Server<
   DefaultEventsMap,
   any
 >;
+
+export type Status = "success" | "failed";

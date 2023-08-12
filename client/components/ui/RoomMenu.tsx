@@ -21,15 +21,19 @@ const RoomMenu = () => {
           if (user) {
             setIsLoading(true);
             const data = {
-              id: nanoid(),
-              host: user,
-              members: [],
+              roomId: nanoid(),
+              adminId: user._id,
             };
-            socket.emit("create-room", data.id, data, (res: any) => {
-              if (res.status === "success") {
-                router.push(`/meeting/${data.id}`);
+            socket.emit(
+              "create-room",
+              data.roomId,
+              data.adminId,
+              (res: any) => {
+                if (res.status === "success") {
+                  router.push(`/meeting/${data.roomId}`);
+                }
               }
-            });
+            );
           } else {
             setModalState({ showAuthModal: true });
           }
