@@ -12,6 +12,7 @@ import errorHandlerMiddleware from "./middleware/error/errorHandler";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { config } from "./global/config";
+import { createWorkers } from "./lib/mediasoup/worker";
 
 const app = express();
 const server = createServer(app);
@@ -79,6 +80,8 @@ const start = async () => {
     server.listen(config.https.listenPort, () => {
       console.log(`Server is running on port ${config.https.listenPort}`);
     });
+
+    await createWorkers();
   } catch (error) {
     console.log(error);
   }

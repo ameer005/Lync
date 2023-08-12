@@ -6,7 +6,7 @@ const useRoomClient = () => {
   const setLocalMediaData = useStore((state) => state.setLocalMediaData);
   const localMedia = useStore((state) => state.localMedia);
   const localPeer = useStore((state) => state.localPeer);
-  const [cleanupState, setcleanupState] = useState<MediaStream | null>(null);
+  const mediasoupDevice = useStore((state) => state.mediasoupDevice);
 
   //**************************USE EFFECTS**************************//
 
@@ -40,7 +40,6 @@ const useRoomClient = () => {
 
       const audioTrack = mediaStream.getAudioTracks()[0];
       const videoTrack = mediaStream.getVideoTracks()[0];
-      setcleanupState(mediaStream);
       setLocalMediaData({ mediaStream, audioTrack, videoTrack });
     } catch (error) {
       console.error(error);

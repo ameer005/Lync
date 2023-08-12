@@ -1,14 +1,9 @@
 import { Room, GuestUser } from "../types/socket-types";
-import {
-  Consumer,
-  Producer,
-  Transport,
-  Worker,
-  Router,
-} from "mediasoup/node/lib/types";
+import { Consumer, Producer, Transport } from "mediasoup/node/lib/types";
 
 //TODO replace with map
-const rooms: { [roomName: string]: Room } = {};
+
+const rooms: Map<string, Room> = new Map();
 const producers: Map<string, Producer> = new Map();
 const transports: Map<string, Transport> = new Map();
 const consumers: Map<string, Consumer> = new Map();
@@ -19,17 +14,17 @@ const isUserAlreadyInRoom = (members: GuestUser[], socketId: string) => {
   return member;
 };
 
-export const getRoom = (roomId: string) => {
-  return rooms[roomId];
+const getRoom = (roomId: string) => {
+  return rooms.get(roomId);
 };
 
-export const addRoom = (data: Room) => {
+const addRoom = (data: Room) => {
   if (!getRoom(data.id)) {
-    rooms[data.id] = data;
+    rooms.set(data.id, data);
   }
 };
 
-export const addMemberToRoom = (roomId: string, user: GuestUser) => {
+const addMemberToRoom = (roomId: string, user: GuestUser) => {
   const room = getRoom(roomId);
   // TODO
   // if user exist change socket id and actual id in collection
@@ -37,22 +32,34 @@ export const addMemberToRoom = (roomId: string, user: GuestUser) => {
     const isUserInRoom = isUserAlreadyInRoom(room.members, user.socketId);
 
     if (!isUserInRoom) {
-      rooms[roomId].members.push(user);
+      const room = getRoom(roomId);
+      room?.members.push(user);
     }
   }
 };
 
-export const removeMemberFromRoom = (roomId: string, userSocketId: string) => {
-  if (getRoom(roomId)) {
-    rooms[roomId].members = rooms[roomId]?.members.filter(
-      (mem) => mem.socketId !== userSocketId
-    );
+const removeMemberFromRoom = (roomId: string, userSocketId: string) => {
+  const room = getRoom(roomId);
+  if (room) {
+    room.members = room.members.filter((mem) => mem.socketId !== userSocketId);
   }
 };
 
-export const getRoomMembers = (roomId: string) => {
+const getRoomMembers = (roomId: string) => {
   const room = getRoom(roomId);
+  if (!room) return console.error("no room found");
   return room.members;
 };
 
 // PRODUCERS FUNCTIONS
+export {
+  consumers,
+  producers,
+  rooms,
+  transports,
+  getRoom,
+  getRoomMembers,
+  removeMemberFromRoom,
+  addMemberToRoom,
+  addRoom,
+};

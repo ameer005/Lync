@@ -1,4 +1,6 @@
 import { StateCreator } from "zustand";
+import { Device } from "mediasoup-client/lib/types";
+import * as mediasoup from "mediasoup-client";
 
 type LocalPeer = {
   shareMic: boolean;
@@ -12,6 +14,7 @@ type LocalMedia = {
 };
 
 export interface MeetingSlice {
+  mediasoupDevice: Device;
   localMedia: LocalMedia;
   localPeer: LocalPeer;
   setMeetingData: (modal: Partial<MeetingSlice>) => void;
@@ -20,6 +23,7 @@ export interface MeetingSlice {
 }
 
 const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
+  mediasoupDevice: new mediasoup.Device(),
   localMedia: {
     mediaStream: null,
     audioTrack: null,
