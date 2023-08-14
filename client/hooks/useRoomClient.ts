@@ -6,7 +6,6 @@ const useRoomClient = () => {
   const setLocalMediaData = useStore((state) => state.setLocalMediaData);
   const localMedia = useStore((state) => state.localMedia);
   const localPeer = useStore((state) => state.localPeer);
-  const mediasoupDevice = useStore((state) => state.mediasoupDevice);
 
   //**************************USE EFFECTS**************************//
 

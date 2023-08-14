@@ -1,6 +1,7 @@
 import * as mediasoup from "mediasoup";
 import { Worker } from "mediasoup/node/lib/types";
 import { config } from "../../global/config";
+import logger from "../logger";
 
 const workers: Worker[] = [];
 
@@ -17,7 +18,7 @@ const createWorkers = async () => {
     });
 
     worker.on("died", () => {
-      console.log(`mediasoup worker died, exiting in 2 sec... ${worker.pid}`);
+      logger.warn(`mediasoup worker died, exiting in 2 sec... ${worker.pid}`);
 
       setTimeout(() => {
         process.exit(1);

@@ -13,6 +13,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { config } from "./global/config";
 import { createWorkers } from "./lib/mediasoup/worker";
+import morganMiddleware from "./middleware/morganMiddleware";
 
 const app = express();
 const server = createServer(app);
@@ -29,7 +30,6 @@ import { webSockets } from "./lib/socket/web-sockets";
 dotenv.config();
 
 if (process.env.NODE_ENV !== "production") {
-  app.use(morgan("dev"));
   app.use(
     cors({
       credentials: true,
@@ -44,7 +44,7 @@ if (process.env.NODE_ENV !== "production") {
     })
   );
 }
-
+app.use(morganMiddleware);
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());

@@ -12,6 +12,8 @@ import {
   BiMicrophone,
   BiMicrophoneOff,
 } from "react-icons/bi";
+import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
+import { asyncSocket } from "@/utils/helpers";
 
 interface ComponentProps {
   setIsJoined: React.Dispatch<React.SetStateAction<boolean>>;
@@ -27,6 +29,8 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
   const localPeer = useStore((state) => state.localPeer);
   const setLocalPeerData = useStore((state) => state.setLocalPeerData);
   const { mediaStream } = useStore((state) => state.localMedia);
+  const mediasoupDevice = useStore((state) => state.mediasoupDevice);
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
@@ -41,24 +45,39 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
     }
   }, [mediaStream]);
 
-  const onJoinRoom = () => {
+  const onJoinRoom = async () => {
     if (!name) return;
-    const payload = {
-      name,
-      id: user?._id || nanoid(),
-    };
+    try {
+      const payload = {
+        name,
+        id: user?._id || nanoid(),
+      };
 
-    socket.emit("join-room", roomId, payload, (res: any) => {
-      if (res.status === "success") {
-        setIsJoined(true);
-        // console.log(res.members);
-      } else {
-        // TODO
-        // implement toas notification
-        router.push("/");
-        console.log("room doesn't exist");
-      }
-    });
+      // prettier-ignore
+      const roomMembers = await asyncSocket<any>(socket, "join-room", roomId, payload);
+      const rtpCapabilities = await asyncSocket<RtpCapabilities>(
+        socket,
+        "get-router-rtp-capabilities",
+        roomId
+      );
+
+      await loadDevice(rtpCapabilities);
+      console.log(roomMembers);
+      setIsJoined(true);
+    } catch (err) {
+      // TODO
+      // implement toas notification
+      router.push("/");
+      console.log("room doesn't exist");
+    }
+  };
+
+  const loadDevice = async (rtpCapabilities: RtpCapabilities) => {
+    try {
+      await mediasoupDevice.load({ routerRtpCapabilities: rtpCapabilities });
+    } catch (err) {
+      return err;
+    }
   };
 
   return (

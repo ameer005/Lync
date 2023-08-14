@@ -7,6 +7,7 @@ import {
   MediaKind,
   RtpCapabilities,
 } from "mediasoup/node/lib/types";
+import logger from "../logger";
 
 class Peer {
   public socketId: string;
@@ -47,10 +48,9 @@ class Peer {
     this.producers.set(producer.id, producer);
 
     producer.on("transportclose", () => {
-      console.log("Producer transport closed: ", {
-        name: `${this.name}`,
-        consumer_id: `${producer!.id}`,
-      });
+      logger.info(
+        `Producer transport closed: {name: ${this.name}, consumerId: ${producer?.id}}`
+      );
 
       producer?.close();
       this.producers.delete(producer?.id!);
@@ -75,7 +75,7 @@ class Peer {
         paused: false,
       });
     } catch (error) {
-      console.error("Consuming failed: ", error);
+      logger.error("Consuming failed: ", error);
       return;
     }
 
@@ -91,10 +91,12 @@ class Peer {
     this.consumers.set(consumer?.id!, consumer!);
 
     consumer?.on("transportclose", () => {
-      console.log("Consumer transport close", {
-        name: `${this.name}`,
-        consumer_id: `${consumer!.id}`,
-      });
+      logger.info(
+        `Consumer transport close ${JSON.stringify({
+          name: `${this.name}`,
+          consumer_id: `${consumer!.id}`,
+        })}`
+      );
 
       this.consumers.delete(consumer!.id);
     });

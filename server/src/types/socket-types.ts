@@ -15,3 +15,8 @@ export interface Peer {
   consumers: Map<string, Consumer>;
   producers: Map<string, Producer>;
 }
+
+export enum CbStatus {
+  FAILED = "failed",
+  SUCCESS = "success",
+}

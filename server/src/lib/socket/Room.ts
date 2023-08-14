@@ -4,11 +4,11 @@ import {
   RtpParameters,
   MediaKind,
   RtpCapabilities,
-  Producer,
 } from "mediasoup/node/lib/types";
 import { IO } from "../../types/shared";
 import Peer from "./Peer";
 import { config } from "../../global/config";
+import logger from "../logger";
 
 type BroadcastEvent = "new-producer" | "consumer-closed";
 
@@ -61,22 +61,24 @@ class Room {
       try {
         await transport.setMaxIncomingBitrate(maxIncomingBitrate);
       } catch (error) {
-        console.error(error);
+        logger.error(error);
       }
     }
 
     transport.on("dtlsstatechange", (dtlsState) => {
       if (dtlsState === "closed") {
-        console.log("Transport close: ", this.peers.get(socketId)?.name);
+        logger.info(`Transport close: ${this.peers.get(socketId)?.name} `);
         transport.close();
       }
     });
 
     transport.on("@close", () => {
-      console.log("Transport close: ", this.peers.get(socketId)?.name);
+      logger.info(`Transport close: ${this.peers.get(socketId)?.name}`);
     });
 
-    console.log("Adding transport", { transportId: transport.id });
+    logger.info(
+      `Adding transport ${JSON.stringify({ transportId: transport.id })}`
+    );
     this.peers.get(socketId)?.addTransport(transport);
 
     return {
@@ -127,7 +129,7 @@ class Room {
     rtpCapabilities: RtpCapabilities
   ) {
     if (!this.router.canConsume({ producerId, rtpCapabilities })) {
-      console.error("cannot consume");
+      logger.error("cannot consume");
       return;
     }
 
@@ -139,10 +141,12 @@ class Room {
     const { consumer, params } = res;
 
     consumer.on("producerclose", () => {
-      console.log("Consumer closed due to producer close event", {
-        name: `${this.peers.get(socketId)?.name}`,
-        consumer_id: `${consumer.id}`,
-      });
+      logger.info(
+        `Consumer closed due to producer close event ${JSON.stringify({
+          name: `${this.peers.get(socketId)?.name}`,
+          consumer_id: `${consumer.id}`,
+        })}`
+      );
 
       this.broadCast("consumer-closed", consumer.id);
     });

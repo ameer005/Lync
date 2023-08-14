@@ -8,11 +8,7 @@ export const config = {
   https: {
     listenIp: "0.0.0.0",
     listenPort: Number(process.env.PROTOO_LISTEN_PORT) || 5000,
-    tls: {
-      cert:
-        process.env.HTTPS_CERT_FULLCHAIN || `${__dirname}/certs/fullchain.pem`,
-      key: process.env.HTTPS_CERT_PRIVKEY || `${__dirname}/certs/privkey.pem`,
-    },
+    isProduction: process.env.NODE_ENV === "production",
   },
 
   mediasoup: {

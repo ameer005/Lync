@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BiSolidVideoPlus } from "react-icons/bi";
 import { BsKeyboardFill } from "react-icons/bs";
+import { asyncSocket } from "@/utils/helpers";
 
 const RoomMenu = () => {
   const [roomInput, setRoomInput] = useState<string>("");
@@ -17,23 +18,18 @@ const RoomMenu = () => {
     <div className="flex gap-5 sm:flex-col">
       <button
         disabled={isLoading}
-        onClick={() => {
+        onClick={async () => {
           if (user) {
             setIsLoading(true);
-            const data = {
-              roomId: nanoid(),
-              adminId: user._id,
-            };
-            socket.emit(
-              "create-room",
-              data.roomId,
-              data.adminId,
-              (res: any) => {
-                if (res.status === "success") {
-                  router.push(`/meeting/${data.roomId}`);
-                }
-              }
-            );
+            const data = { roomId: nanoid(), adminId: user._id };
+            try {
+              // prettier-ignore
+              await asyncSocket<any>(socket,"create-room",data.roomId,data.adminId);
+              router.push(`/meeting/${data.roomId}`);
+            } catch (err) {
+              console.log(err);
+              setIsLoading(false);
+            }
           } else {
             setModalState({ showAuthModal: true });
           }
@@ -57,16 +53,15 @@ const RoomMenu = () => {
         </label>
         {roomInput ? (
           <button
-            onClick={() =>
-              socket.emit("get-room", roomInput, (res: any) => {
-                if (res.status === "success") {
-                  router.push(`/meeting/${roomInput}`);
-                } else {
-                  // TODO implement toast error
-                  console.log("no");
-                }
-              })
-            }
+            onClick={async () => {
+              try {
+                await asyncSocket<any>(socket, "get-room", roomInput);
+                router.push(`/meeting/${roomInput}`);
+              } catch (err) {
+                // TODO implement toast error
+                console.log(err);
+              }
+            }}
             className="h-full px-4 font-medium text-zinc-400"
           >
             Join
