@@ -1,11 +1,14 @@
 "useclient";
 import { useEffect, useState } from "react";
 import useStore from "@/store/useStore";
+import { initProducerTransportEvents } from "@/app/lib/webrtc-helpers";
 
-const useRoomClient = () => {
+const useRoomClient = (roomId: string) => {
   const setLocalMediaData = useStore((state) => state.setLocalMediaData);
   const localMedia = useStore((state) => state.localMedia);
   const localPeer = useStore((state) => state.localPeer);
+  const producerTransport = useStore((state) => state.producerTransport);
+  const socket = useStore((state) => state.socket);
 
   //**************************USE EFFECTS**************************//
 
@@ -24,6 +27,12 @@ const useRoomClient = () => {
   useEffect(() => {
     toggleLocalStreamControls();
   }, [localPeer.shareCam, localPeer.shareMic]);
+
+  useEffect(() => {
+    if (producerTransport) {
+      initProducerTransportEvents({ producerTransport, roomId, socket });
+    }
+  }, [producerTransport]);
 
   //**************************FUNCTIONS**************************//
 

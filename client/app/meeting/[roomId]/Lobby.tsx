@@ -14,6 +14,7 @@ import {
 } from "react-icons/bi";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { asyncSocket } from "@/utils/helpers";
+import { loadDevice, initTransports } from "@/app/lib/webrtc-helpers";
 
 interface ComponentProps {
   setIsJoined: React.Dispatch<React.SetStateAction<boolean>>;
@@ -30,6 +31,7 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
   const setLocalPeerData = useStore((state) => state.setLocalPeerData);
   const { mediaStream } = useStore((state) => state.localMedia);
   const mediasoupDevice = useStore((state) => state.mediasoupDevice);
+  const setMeetingData = useStore((state) => state.setMeetingData);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -61,22 +63,19 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
         roomId
       );
 
-      await loadDevice(rtpCapabilities);
-      console.log(roomMembers);
+      await loadDevice({ mediasoupDevice, rtpCapabilities });
+      await initTransports({
+        socket,
+        roomId,
+        mediasoupDevice,
+        setMeetingData,
+      });
       setIsJoined(true);
     } catch (err) {
       // TODO
       // implement toas notification
       router.push("/");
       console.log("room doesn't exist");
-    }
-  };
-
-  const loadDevice = async (rtpCapabilities: RtpCapabilities) => {
-    try {
-      await mediasoupDevice.load({ routerRtpCapabilities: rtpCapabilities });
-    } catch (err) {
-      return err;
     }
   };
 

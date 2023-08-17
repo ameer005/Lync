@@ -2,7 +2,7 @@ import { Socket } from "socket.io-client";
 
 export const asyncSocket = <T>(
   socket: Socket,
-  event: string,
+  event: SocketEvents,
   ...rest: any
 ): Promise<T> => {
   return new Promise((resolve, reject) => {

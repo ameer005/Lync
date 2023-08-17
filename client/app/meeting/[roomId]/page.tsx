@@ -14,7 +14,7 @@ interface PageProps {
 const MeetingPage = ({ params }: PageProps) => {
   const [isJoined, setIsJoined] = useState(false);
   // initializing rooms data
-  useRoomClient();
+  useRoomClient(params.roomId);
 
   if (!isJoined) {
     return <Lobby roomId={params.roomId} setIsJoined={setIsJoined} />;

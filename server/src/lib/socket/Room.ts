@@ -28,7 +28,7 @@ class Room {
 
   // adding and removing peers from meeting
   addPeer(peer: Peer) {
-    this.peers.set(peer.id, peer);
+    this.peers.set(peer.socketId, peer);
   }
 
   removePeer(socketId: string) {

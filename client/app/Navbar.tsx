@@ -1,6 +1,5 @@
 "use client";
 
-import Avatar2 from "@/components/ui/Avatar2";
 import Logo from "@/components/ui/Logo";
 import BtnPrimary from "@/components/ui/buttons/BtnPrimary";
 import usePageLoaded from "@/hooks/usePageLoaded";
