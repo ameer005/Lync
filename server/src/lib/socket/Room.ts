@@ -9,6 +9,7 @@ import { IO } from "../../types/shared";
 import Peer from "./Peer";
 import { config } from "../../global/config";
 import logger from "../logger";
+import { SocketEvents } from "../../types/socket-types";
 
 type BroadcastEvent = "new-producer" | "consumer-closed";
 
@@ -113,7 +114,7 @@ class Room {
         ?.createProducer(producerTransportId, rtpParameters, kind);
 
       if (!producer) return;
-      this.broadCast("new-producer", {
+      this.broadCast(SocketEvents.NEW_PRODUCER, {
         producer_id: producer.id,
         producer_socketId: socketId,
       });
@@ -148,7 +149,7 @@ class Room {
         })}`
       );
 
-      this.broadCast("consumer-closed", consumer.id);
+      this.broadCast(SocketEvents.CONSUMER_CLOSED, consumer.id);
     });
 
     return params;

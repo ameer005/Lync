@@ -17,15 +17,18 @@ type LocalMedia = {
 export interface MeetingSlice {
   mediasoupDevice: Device;
   producerTransport: Transport<AppData> | null;
+  consumerTransport: Transport<AppData> | null;
   localMedia: LocalMedia;
   localPeer: LocalPeer;
   setMeetingData: (modal: Partial<MeetingSlice>) => void;
   setLocalPeerData: (data: LocalPeer) => void;
   setLocalMediaData: (data: LocalMedia) => void;
+  cleanupMeetingData: () => void;
 }
 
 const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
   producerTransport: null,
+  consumerTransport: null,
   mediasoupDevice: new mediasoup.Device(),
   localMedia: {
     mediaStream: null,
@@ -46,6 +49,9 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
   },
   setLocalMediaData: (data: LocalMedia) => {
     set({ localMedia: data });
+  },
+  cleanupMeetingData: () => {
+    set({ consumerTransport: null, producerTransport: null });
   },
 });
 

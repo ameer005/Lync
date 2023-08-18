@@ -1,4 +1,4 @@
-import { CbStatus, RoomUser } from "../../types/socket-types";
+import { CbStatus, RoomUser, SocketEvents } from "../../types/socket-types";
 import { IO } from "../../types/shared";
 import { getMediasoupRouter } from "../mediasoup/worker";
 import Room from "./Room";
@@ -12,23 +12,30 @@ import {
 } from "../../global/states";
 import logger from "../logger";
 import { DtlsParameters } from "mediasoup/node/lib/WebRtcTransport";
-import { MediaKind, RtpParameters } from "mediasoup/node/lib/RtpParameters";
+import {
+  MediaKind,
+  RtpCapabilities,
+  RtpParameters,
+} from "mediasoup/node/lib/RtpParameters";
 
 const webSockets = async (io: IO) => {
   io.on("connection", (socket) => {
     // ROOM EVENTS
-    socket.on("create-room", async (roomId: string, adminId: string, cb) => {
-      if (roomAlreadyExist(roomId)) {
-        cb({ status: CbStatus.FAILED, message: "room already exist" });
-      } else {
-        logger.info(`created room: ${JSON.stringify({ roomId })}`);
-        let router = await getMediasoupRouter();
-        addRoom(new Room(roomId, adminId, io, router));
-        cb({ status: CbStatus.SUCCESS, data: { roomId: roomId } });
+    socket.on(
+      SocketEvents.CREATE_ROOM,
+      async (roomId: string, adminId: string, cb) => {
+        if (roomAlreadyExist(roomId)) {
+          cb({ status: CbStatus.FAILED, message: "room already exist" });
+        } else {
+          logger.info(`created room: ${JSON.stringify({ roomId })}`);
+          let router = await getMediasoupRouter();
+          addRoom(new Room(roomId, adminId, io, router));
+          cb({ status: CbStatus.SUCCESS, data: { roomId: roomId } });
+        }
       }
-    });
+    );
 
-    socket.on("get-room", (roomId: string, cb) => {
+    socket.on(SocketEvents.GET_ROOM, (roomId: string, cb) => {
       if (!roomAlreadyExist(roomId)) {
         cb({ status: CbStatus.FAILED, message: "room does not exist" });
         return;
@@ -37,7 +44,7 @@ const webSockets = async (io: IO) => {
       cb({ status: CbStatus.SUCCESS, roomId: roomId });
     });
 
-    socket.on("join-room", (roomId: string, user: RoomUser, cb) => {
+    socket.on(SocketEvents.JOIN_ROOM, (roomId: string, user: RoomUser, cb) => {
       if (!roomAlreadyExist(roomId)) {
         cb({ status: CbStatus.FAILED, message: "room does not exist" });
         return;
@@ -47,7 +54,7 @@ const webSockets = async (io: IO) => {
       cb({ status: CbStatus.SUCCESS, data: getRoom(roomId)?.toJson() });
     });
 
-    socket.on("leave-room", (roomId: string, cb) => {
+    socket.on(SocketEvents.LEAVE_ROOM, (roomId: string, cb) => {
       const room = getRoom(roomId);
 
       // TODO not working properly
@@ -64,41 +71,47 @@ const webSockets = async (io: IO) => {
     });
 
     // media soup handshake
-    socket.on("get-router-rtp-capabilities", (roomId: string, cb) => {
-      const room = getRoom(roomId);
-      if (room) {
-        cb({ status: CbStatus.SUCCESS, data: room.getRtpCapabilities() });
-      } else {
-        cb({ status: CbStatus.FAILED, message: "room doesn't exist" });
+    socket.on(
+      SocketEvents.GET_ROUTER_RTP_CAPABILITIES,
+      (roomId: string, cb) => {
+        const room = getRoom(roomId);
+        if (room) {
+          cb({ status: CbStatus.SUCCESS, data: room.getRtpCapabilities() });
+        } else {
+          cb({ status: CbStatus.FAILED, message: "room doesn't exist" });
+        }
       }
-    });
-
-    socket.on("create-webrtc-transport", async (roomId: string, cb) => {
-      const room = getRoom(roomId);
-
-      if (!room) {
-        cb({ status: CbStatus.FAILED, message: "Room doesn't exit" });
-        return;
-      }
-
-      logger.info(
-        `Creating webrtc transport for ${JSON.stringify({
-          name: room?.getPeers().get(socket.id)?.name,
-        })}`
-      );
-
-      try {
-        const { params } = await room?.createWebRtcTransport(socket.id);
-
-        cb({ status: CbStatus.SUCCESS, data: params });
-      } catch (err: any) {
-        logger.error(err);
-        cb({ status: CbStatus.FAILED, message: err.message });
-      }
-    });
+    );
 
     socket.on(
-      "connect-transport",
+      SocketEvents.CREATE_WEBRTC_TRANSPORT,
+      async (roomId: string, cb) => {
+        const room = getRoom(roomId);
+
+        if (!room) {
+          cb({ status: CbStatus.FAILED, message: "Room doesn't exit" });
+          return;
+        }
+
+        logger.info(
+          `Creating webrtc transport for ${JSON.stringify({
+            name: room?.getPeers().get(socket.id)?.name,
+          })}`
+        );
+
+        try {
+          const { params } = await room?.createWebRtcTransport(socket.id);
+
+          cb({ status: CbStatus.SUCCESS, data: params });
+        } catch (err: any) {
+          logger.error(err);
+          cb({ status: CbStatus.FAILED, message: err.message });
+        }
+      }
+    );
+
+    socket.on(
+      SocketEvents.CONNECT_TRANSPORT,
       async (
         roomId: string,
         transportId: string,
@@ -137,7 +150,7 @@ const webSockets = async (io: IO) => {
     );
 
     socket.on(
-      "produce",
+      SocketEvents.PRODUCE,
       async (
         roomId: string,
         kind: MediaKind,
@@ -169,6 +182,17 @@ const webSockets = async (io: IO) => {
 
         cb({ status: CbStatus.SUCCESS, data: { producerId } });
       }
+    );
+
+    socket.on(
+      SocketEvents.CONSUME,
+      async (
+        roomId: string,
+        consumerTransportId: string,
+        producerId: string,
+        rtpCapabilities: RtpCapabilities,
+        cb
+      ) => {}
     );
 
     // socket.on("send-message", (roomId, data) => {

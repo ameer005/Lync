@@ -29,6 +29,10 @@ interface InitProducerTransportEventsProps extends BaseWebrtc {
   producerTransport: Transport<AppData>;
 }
 
+interface InitConsumerTransportEventsProps extends BaseWebrtc {
+  consumerTransport: Transport<AppData>;
+}
+
 // functions
 export const loadDevice = async ({
   mediasoupDevice,
@@ -41,25 +45,45 @@ export const loadDevice = async ({
   }
 };
 
+// **********************************************TRANSPORT FUNCTIONS ***************************************************************//
 export const initTransports = async ({
   socket,
   mediasoupDevice,
   roomId,
   setMeetingData,
 }: InitTransportProps) => {
-  try {
-    const data = await asyncSocket<TransportOptions>(
-      socket,
-      "create-webrtc-transport",
-      roomId
-    );
+  // producer transport
+  {
+    try {
+      const data = await asyncSocket<TransportOptions>(
+        socket,
+        "create-webrtc-transport",
+        roomId
+      );
 
-    let proTransport = mediasoupDevice.createSendTransport(data);
-    setMeetingData({
-      producerTransport: proTransport,
-    });
-  } catch (err) {
-    console.error(err);
+      let producerTransport = mediasoupDevice.createSendTransport(data);
+      setMeetingData({
+        producerTransport: producerTransport,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // consumer transport
+  {
+    try {
+      const data = await asyncSocket<TransportOptions>(
+        socket,
+        "create-webrtc-transport",
+        roomId
+      );
+
+      let consumerTransport = mediasoupDevice.createRecvTransport(data);
+      setMeetingData({ consumerTransport: consumerTransport });
+    } catch (err: any) {
+      console.error(err);
+    }
   }
 };
 
@@ -123,6 +147,51 @@ export const initProducerTransportEvents = ({
       case "failed":
         console.log("tranport closed");
         producerTransport.close();
+        break;
+
+      default:
+        break;
+    }
+  });
+};
+
+export const initConsumerTransportEvents = ({
+  consumerTransport,
+  roomId,
+  socket,
+}: InitConsumerTransportEventsProps) => {
+  consumerTransport.on(
+    "connect",
+    async ({ dtlsParameters }, callback, errback) => {
+      try {
+        const message = await asyncSocket<string>(
+          socket,
+          "connect-transport",
+          roomId,
+          consumerTransport.id,
+          dtlsParameters
+        );
+
+        console.log(message);
+        callback();
+      } catch (err: any) {
+        errback(err);
+      }
+    }
+  );
+
+  consumerTransport.on("connectionstatechange", async (state) => {
+    switch (state) {
+      case "connecting":
+        break;
+
+      case "connected":
+        //localVideo.srcObject = stream
+        break;
+
+      case "failed":
+        console.log("tranport closed");
+        consumerTransport.close();
         break;
 
       default:

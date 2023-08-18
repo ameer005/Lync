@@ -20,3 +20,17 @@ export enum CbStatus {
   FAILED = "failed",
   SUCCESS = "success",
 }
+
+export enum SocketEvents {
+  CREATE_ROOM = "create-room",
+  GET_ROOM = "get-room",
+  JOIN_ROOM = "join-room",
+  LEAVE_ROOM = "leave-room",
+  GET_ROUTER_RTP_CAPABILITIES = "get-router-rtp-capabilities",
+  CREATE_WEBRTC_TRANSPORT = "create-webrtc-transport",
+  CONNECT_TRANSPORT = "connect-transport",
+  PRODUCE = "produce",
+  CONSUME = "consume",
+  NEW_PRODUCER = "new-producer",
+  CONSUMER_CLOSED = "consumer-closed",
+}

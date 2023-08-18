@@ -1,13 +1,18 @@
 "useclient";
 import { useEffect, useState } from "react";
 import useStore from "@/store/useStore";
-import { initProducerTransportEvents } from "@/app/lib/webrtc-helpers";
+import {
+  initConsumerTransportEvents,
+  initProducerTransportEvents,
+} from "@/app/lib/webrtc-helpers";
 
 const useRoomClient = (roomId: string) => {
   const setLocalMediaData = useStore((state) => state.setLocalMediaData);
   const localMedia = useStore((state) => state.localMedia);
   const localPeer = useStore((state) => state.localPeer);
   const producerTransport = useStore((state) => state.producerTransport);
+  const consumerTransport = useStore((state) => state.consumerTransport);
+  const cleanupMeetingData = useStore((state) => state.cleanupMeetingData);
   const socket = useStore((state) => state.socket);
 
   //**************************USE EFFECTS**************************//
@@ -15,6 +20,12 @@ const useRoomClient = (roomId: string) => {
   // Initializing data
   useEffect(() => {
     startLocalStream();
+
+    // cleaning up normal status
+    // which are not depended upon it's values
+    return () => {
+      cleanupMeetingData();
+    };
   }, []);
 
   // clean up
@@ -33,6 +44,12 @@ const useRoomClient = (roomId: string) => {
       initProducerTransportEvents({ producerTransport, roomId, socket });
     }
   }, [producerTransport]);
+
+  useEffect(() => {
+    if (consumerTransport) {
+      initConsumerTransportEvents({ consumerTransport, roomId, socket });
+    }
+  }, [consumerTransport]);
 
   //**************************FUNCTIONS**************************//
 
