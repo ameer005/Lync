@@ -13,6 +13,7 @@ class Peer {
   public socketId: string;
   public id: string;
   public name: string;
+  // we can also divide this transport to consumer and producers
   public transport: Map<string, Transport> = new Map();
   public consumers: Map<string, Consumer> = new Map();
   public producers: Map<string, Producer> = new Map();
@@ -77,13 +78,6 @@ class Peer {
     } catch (error) {
       logger.error("Consuming failed: ", error);
       return;
-    }
-
-    if (consumer?.type == "simulcast") {
-      await consumer.setPreferredLayers({
-        spatialLayer: 2,
-        temporalLayer: 2,
-      });
     }
 
     if (!consumer) return;

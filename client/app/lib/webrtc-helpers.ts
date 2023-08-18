@@ -4,10 +4,12 @@ import {
   RtpCapabilities,
   Device,
   TransportOptions,
+  ProducerOptions,
+  Producer,
 } from "mediasoup-client/lib/types";
 import { asyncSocket } from "@/utils/helpers";
 import { Socket } from "socket.io-client";
-import { MeetingSlice } from "@/store/slices/meetingSlice";
+import { MeetingSlice, LocalMedia } from "@/store/slices/meetingSlice";
 
 interface BaseWebrtc {
   roomId: string;
@@ -31,6 +33,13 @@ interface InitProducerTransportEventsProps extends BaseWebrtc {
 
 interface InitConsumerTransportEventsProps extends BaseWebrtc {
   consumerTransport: Transport<AppData>;
+}
+
+interface ProducerProps {
+  localMedia: LocalMedia;
+  producerTransport: Transport<AppData>;
+  producers: Map<string, Producer<AppData>>;
+  setMeetingData: (modal: Partial<MeetingSlice>) => void;
 }
 
 // functions
@@ -197,5 +206,46 @@ export const initConsumerTransportEvents = ({
       default:
         break;
     }
+  });
+};
+
+// **************************** MAIN FUNCTIONS ****************************** //
+const produce = async ({
+  localMedia,
+  producerTransport,
+  producers,
+  setMeetingData,
+}: ProducerProps) => {
+  const params: ProducerOptions = {
+    track: localMedia.videoTrack!,
+    encodings: [
+      {
+        rid: "r0",
+        maxBitrate: 100000,
+        scalabilityMode: "S1T3",
+      },
+      {
+        rid: "r1",
+        maxBitrate: 300000,
+        scalabilityMode: "S1T3",
+      },
+      {
+        rid: "r2",
+        maxBitrate: 900000,
+        scalabilityMode: "S1T3",
+      },
+    ],
+    codecOptions: { videoGoogleStartBitrate: 1000 },
+  };
+
+  const producer = await producerTransport.produce(params);
+  setMeetingData({ producers: { ...producers, [producer.id]: producer } });
+
+  producer.on("trackended", () => {
+    console.log("track ended");
+  });
+
+  producer.on("transportclose", () => {
+    console.log("transport ended");
   });
 };

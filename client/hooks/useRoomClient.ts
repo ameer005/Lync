@@ -60,14 +60,17 @@ const useRoomClient = (roomId: string) => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: true,
+        video: {
+          width: { min: 640, max: 1920 },
+          height: { min: 400, max: 1080 },
+        },
       });
 
       const audioTrack = mediaStream.getAudioTracks()[0];
       const videoTrack = mediaStream.getVideoTracks()[0];
       setLocalMediaData({ mediaStream, audioTrack, videoTrack });
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error(error.message);
     }
   };
 
