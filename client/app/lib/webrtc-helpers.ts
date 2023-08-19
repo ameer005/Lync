@@ -6,6 +6,7 @@ import {
   TransportOptions,
   ProducerOptions,
   Producer,
+  ConsumerOptions,
 } from "mediasoup-client/lib/types";
 import { asyncSocket } from "@/utils/helpers";
 import { Socket } from "socket.io-client";
@@ -37,9 +38,16 @@ interface InitConsumerTransportEventsProps extends BaseWebrtc {
 
 interface ProducerProps {
   localMedia: LocalMedia;
-  producerTransport: Transport<AppData>;
+  producerTransport: Transport<AppData> | null;
   producers: Map<string, Producer<AppData>>;
   setMeetingData: (modal: Partial<MeetingSlice>) => void;
+}
+
+interface GetconsumerStreamProps extends BaseWebrtc {
+  mediasoupDevice: Device;
+  setMeetingData: (modal: Partial<MeetingSlice>) => void;
+  consumerTransport: Transport<AppData> | null;
+  producerId: string;
 }
 
 // functions
@@ -75,7 +83,7 @@ export const initTransports = async ({
         producerTransport: producerTransport,
       });
     } catch (err) {
-      console.error(err);
+      console.error("failed to create producer transport: ", err);
     }
   }
 
@@ -91,7 +99,7 @@ export const initTransports = async ({
       let consumerTransport = mediasoupDevice.createRecvTransport(data);
       setMeetingData({ consumerTransport: consumerTransport });
     } catch (err: any) {
-      console.error(err);
+      console.error("failed to create consumer transport", err);
     }
   }
 };
@@ -106,7 +114,7 @@ export const initProducerTransportEvents = ({
     "connect",
     async ({ dtlsParameters }, callback, errback) => {
       try {
-        const message = await asyncSocket<string>(
+        await asyncSocket<string>(
           socket,
           "connect-transport",
           roomId,
@@ -114,7 +122,7 @@ export const initProducerTransportEvents = ({
           dtlsParameters
         );
 
-        console.log(message);
+        // console.log(message);
         callback();
       } catch (err: any) {
         errback(err);
@@ -134,8 +142,6 @@ export const initProducerTransportEvents = ({
           rtpParameters,
           producerTransport.id
         );
-
-        console.log(producerId);
 
         callback({ id: producerId });
       } catch (err: any) {
@@ -210,7 +216,7 @@ export const initConsumerTransportEvents = ({
 };
 
 // **************************** MAIN FUNCTIONS ****************************** //
-const produce = async ({
+export const produce = async ({
   localMedia,
   producerTransport,
   producers,
@@ -238,6 +244,11 @@ const produce = async ({
     codecOptions: { videoGoogleStartBitrate: 1000 },
   };
 
+  if (!producerTransport) {
+    console.log("yo");
+    return;
+  }
+
   const producer = await producerTransport.produce(params);
   setMeetingData({ producers: { ...producers, [producer.id]: producer } });
 
@@ -248,4 +259,40 @@ const produce = async ({
   producer.on("transportclose", () => {
     console.log("transport ended");
   });
+};
+
+export const getconsumerStream = async ({
+  producerId,
+  consumerTransport,
+  mediasoupDevice,
+  roomId,
+  setMeetingData,
+  socket,
+}: GetconsumerStreamProps) => {
+  try {
+    const { rtpCapabilities } = mediasoupDevice;
+
+    const data = await asyncSocket<ConsumerOptions>(
+      socket,
+      "consume",
+      roomId,
+      consumerTransport?.id,
+      producerId,
+      rtpCapabilities
+    );
+
+    const consumer = await consumerTransport?.consume(data);
+    const stream = new MediaStream();
+    if (consumer) {
+      stream.addTrack(consumer.track);
+    }
+
+    return {
+      consumer,
+      stream,
+      kind: data.kind,
+    };
+  } catch (err: any) {
+    console.error(err);
+  }
 };

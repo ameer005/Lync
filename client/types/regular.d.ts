@@ -16,4 +16,5 @@ type SocketEvents =
   | "get-router-rtp-capabilities"
   | "create-webrtc-transport"
   | "connect-transport"
-  | "produce";
+  | "produce"
+  | "consume";

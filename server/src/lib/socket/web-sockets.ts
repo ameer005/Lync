@@ -127,7 +127,7 @@ const webSockets = async (io: IO) => {
 
         logger.info(
           `Connecting  transport for ${JSON.stringify({
-            name: room?.getPeers().get(socket.id),
+            name: room?.getPeers().get(socket.id)?.name,
           })}`
         );
 
@@ -192,7 +192,37 @@ const webSockets = async (io: IO) => {
         producerId: string,
         rtpCapabilities: RtpCapabilities,
         cb
-      ) => {}
+      ) => {
+        const room = getRoom(roomId);
+
+        if (!room) {
+          cb({ status: CbStatus.FAILED, message: "Room doesn't exit" });
+          return;
+        }
+
+        const res = await room.consume(
+          socket.id,
+          consumerTransportId,
+          producerId,
+          rtpCapabilities
+        );
+
+        if (!res) {
+          cb({ status: CbStatus.FAILED, message: "failed to create consumer" });
+          return;
+        }
+
+        console.info(
+          `consumer created: ${JSON.stringify({
+            type: res?.kind,
+            name: room.getPeers().get(socket.id)?.name,
+            id: res?.id,
+            producerId: res?.producerId,
+          })}`
+        );
+
+        cb({ status: CbStatus.SUCCESS, data: res });
+      }
     );
 
     // socket.on("send-message", (roomId, data) => {

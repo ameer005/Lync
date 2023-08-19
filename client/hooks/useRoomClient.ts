@@ -4,6 +4,7 @@ import useStore from "@/store/useStore";
 import {
   initConsumerTransportEvents,
   initProducerTransportEvents,
+  produce,
 } from "@/app/lib/webrtc-helpers";
 
 const useRoomClient = (roomId: string) => {
@@ -13,6 +14,8 @@ const useRoomClient = (roomId: string) => {
   const producerTransport = useStore((state) => state.producerTransport);
   const consumerTransport = useStore((state) => state.consumerTransport);
   const cleanupMeetingData = useStore((state) => state.cleanupMeetingData);
+  const producers = useStore((state) => state.producers);
+  const setMeetingData = useStore((state) => state.setMeetingData);
   const socket = useStore((state) => state.socket);
 
   //**************************USE EFFECTS**************************//
@@ -28,6 +31,11 @@ const useRoomClient = (roomId: string) => {
     };
   }, []);
 
+  // TODO will remove it tracking producers
+  useEffect(() => {
+    console.log(producers);
+  }, [producers]);
+
   // clean up
   useEffect(() => {
     return () => {
@@ -42,6 +50,7 @@ const useRoomClient = (roomId: string) => {
   useEffect(() => {
     if (producerTransport) {
       initProducerTransportEvents({ producerTransport, roomId, socket });
+      produce({ localMedia, producers, producerTransport, setMeetingData });
     }
   }, [producerTransport]);
 

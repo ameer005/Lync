@@ -14,7 +14,7 @@ import {
 } from "react-icons/bi";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { asyncSocket } from "@/utils/helpers";
-import { loadDevice, initTransports } from "@/app/lib/webrtc-helpers";
+import { loadDevice, initTransports, produce } from "@/app/lib/webrtc-helpers";
 
 interface ComponentProps {
   setIsJoined: React.Dispatch<React.SetStateAction<boolean>>;
@@ -29,7 +29,7 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
   const router = useRouter();
   const localPeer = useStore((state) => state.localPeer);
   const setLocalPeerData = useStore((state) => state.setLocalPeerData);
-  const { mediaStream } = useStore((state) => state.localMedia);
+  const localMedia = useStore((state) => state.localMedia);
   const mediasoupDevice = useStore((state) => state.mediasoupDevice);
   const setMeetingData = useStore((state) => state.setMeetingData);
 
@@ -42,10 +42,10 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
   }, []);
 
   useEffect(() => {
-    if (mediaStream && videoRef.current) {
-      videoRef.current.srcObject = mediaStream;
+    if (localMedia.mediaStream && videoRef.current) {
+      videoRef.current.srcObject = localMedia.mediaStream;
     }
-  }, [mediaStream]);
+  }, [localMedia.mediaStream]);
 
   const onJoinRoom = async () => {
     if (!name) return;
@@ -85,7 +85,7 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
         {/* screen */}
         <div className="w-full    flex items-center justify-center px-4 md:px-0  ">
           <div className="w-full responsive-video-container max-w-[90%] xl:max-w-[100%]   overflow-clip bg-black md:rounded-none   relative rounded-lg">
-            {mediaStream ? (
+            {localMedia.mediaStream ? (
               <>
                 <video
                   className="h-full w-full object-cover responsive-video"
