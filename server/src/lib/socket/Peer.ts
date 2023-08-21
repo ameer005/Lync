@@ -80,10 +80,10 @@ class Peer {
     let consumer: Consumer | undefined;
 
     try {
-      consumer = await consumerTransport?.consume({
+      consumer = await consumerTransport.consume({
         producerId,
         rtpCapabilities,
-        paused: false,
+        paused: true,
       });
     } catch (error) {
       logger.error("Consuming failed: ", error);

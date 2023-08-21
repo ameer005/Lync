@@ -212,17 +212,29 @@ const webSockets = async (io: IO) => {
     socket.on(
       SocketEvents.RESUME_CONSUMER,
       async (roomId: string, consumerId: string, cb) => {
-        const room = getRoom(roomId);
+        try {
+          const room = getRoom(roomId);
 
-        if (!room) {
-          cb({ status: CbStatus.FAILED, message: "Room doesn't exit" });
-          return;
+          if (!room) {
+            cb({ status: CbStatus.FAILED, message: "Room doesn't exit" });
+            return;
+          }
+
+          await room
+            .getPeers()
+            .get(socket.id)
+            ?.getConsumer(consumerId)
+            ?.resume();
+
+          logger.info(`consumer resumed ${JSON.stringify({ consumerId })}`);
+          cb({ status: CbStatus.SUCCESS, data: "consumer resumed" });
+        } catch (err: any) {
+          logger.error(
+            `failed to resumer consumer: ${err.message} | ${JSON.stringify({
+              consumerId,
+            })}`
+          );
         }
-
-        await room.getPeers().get(socket.id)?.getConsumer(consumerId)?.resume();
-
-        logger.info(`consumer resumed ${JSON.stringify({ consumerId })}`);
-        cb({ status: CbStatus.SUCCESS, data: "consumer resumed" });
       }
     );
 
@@ -252,6 +264,31 @@ const webSockets = async (io: IO) => {
       const proucers = room.getProducerListForPeer();
       cb({ status: CbStatus.SUCCESS, data: proucers });
     });
+
+    socket.on(
+      SocketEvents.PRODUCER_CLOSED,
+      (roomId: string, producerId: string, cb) => {
+        const room = getRoom(roomId);
+
+        if (!room) {
+          cb({ status: CbStatus.FAILED, message: "Room doesn't exit" });
+          return;
+        }
+
+        logger.info(
+          `producer close ${JSON.stringify({
+            name: room.getPeers().get(socket.id)?.name,
+            producerId: room
+              .getPeers()
+              .get(socket.id)
+              ?.producers.get(producerId)?.id,
+          })}`
+        );
+
+        room.closeProducer(socket.id, producerId);
+        cb({ status: CbStatus.SUCCESS, data: "Producer close" });
+      }
+    );
 
     // socket.on("send-message", (roomId, data) => {
     //   io.to(roomId).emit("get-message", data);

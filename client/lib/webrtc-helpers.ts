@@ -44,7 +44,7 @@ interface InitConsumerTransportEventsProps extends BaseWebrtc {
   consumerTransport: Transport<AppData>;
 }
 
-interface ProduceProps {
+interface ProduceProps extends BaseWebrtc {
   localMedia: LocalMedia;
   producerTransport: Transport<AppData> | null;
   updateProducers: (data: { key: string; value?: Producer<AppData> }) => void;
@@ -55,6 +55,10 @@ interface Consume extends BaseWebrtc {
   consumerTransport: Transport<AppData> | null;
   remoteProducer: RemoteProducer;
   updateConsumers: (data: { key: string; value?: ConsumerData }) => void;
+}
+
+interface CloseProducerProps extends BaseWebrtc {
+  producer: Producer<AppData>;
 }
 
 // helpers
@@ -86,7 +90,6 @@ const consume = async ({
 
   producers.forEach(async (producerId) => {
     try {
-      console.log("remote producerId: ", producerId);
       const { rtpCapabilities } = mediasoupDevice;
 
       const data = await asyncSocket<ConsumerOptions>(
@@ -101,10 +104,12 @@ const consume = async ({
       if (!consumerTransport) return;
 
       // store this consumer to global state
-      const consumer = await consumerTransport.consume(data);
-
-      const stream = new MediaStream();
-      stream.addTrack(consumer.track);
+      const consumer = await consumerTransport.consume({
+        id: data.id,
+        producerId,
+        kind: data.kind,
+        rtpParameters: data.rtpParameters,
+      });
 
       updateConsumers({ key: consumer.id, value: { consumer, user } });
 
@@ -114,7 +119,16 @@ const consume = async ({
         roomId,
         consumer.id
       );
+
       console.log(message);
+
+      consumer.on("trackended", () => {
+        console.log("consumer track ended");
+      });
+
+      consumer.on("transportclose", () => {
+        console.log("consumer transport close");
+      });
     } catch (err: any) {
       console.error(err);
     }
@@ -184,7 +198,6 @@ export const initProducerTransportEvents = ({
           dtlsParameters
         );
 
-        // console.log(message);
         callback();
       } catch (err: any) {
         errback(err);
@@ -204,6 +217,8 @@ export const initProducerTransportEvents = ({
           rtpParameters,
           producerTransport.id
         );
+
+        console.info(`produce event: ${producerId}`);
 
         callback({ id: producerId });
 
@@ -233,10 +248,11 @@ export const initProducerTransportEvents = ({
   producerTransport.on("connectionstatechange", (state) => {
     switch (state) {
       case "connecting":
+        console.log("locat stream connecting");
         break;
 
       case "connected":
-        //localVideo.srcObject = stream
+        console.log("local stream connected");
         break;
 
       case "failed":
@@ -295,12 +311,21 @@ export const initConsumerTransportEvents = ({
   });
 };
 
+const closeProducer = async ({
+  producer,
+  roomId,
+  socket,
+}: CloseProducerProps) => {
+  asyncSocket(socket, "producer-closed", roomId, producer.id);
+};
+
 // **************************** MAIN FUNCTIONS ****************************** //
 export const produce = async ({
   localMedia,
   producerTransport,
-  // producers,
   updateProducers,
+  socket,
+  roomId,
 }: ProduceProps) => {
   const params: ProducerOptions = {
     track: localMedia.videoTrack!,
@@ -325,7 +350,6 @@ export const produce = async ({
   };
 
   if (!producerTransport) {
-    console.log("yo");
     return;
   }
 
@@ -335,9 +359,25 @@ export const produce = async ({
 
   producer.on("trackended", () => {
     console.log("track ended");
+    closeProducer({ socket, roomId, producer });
   });
 
   producer.on("transportclose", () => {
-    console.log("transport ended");
+    console.log("producer transport close");
+    localMedia.mediaStream?.getTracks().forEach((track) => {
+      track.stop();
+    });
+
+    updateProducers({ key: producer.id });
+  });
+
+  producer.on("@close", () => {
+    console.log("producer transport close");
+    localMedia.mediaStream?.getTracks().forEach((track) => {
+      track.stop();
+    });
+
+    closeProducer({ socket, roomId, producer });
+    updateProducers({ key: producer.id });
   });
 };

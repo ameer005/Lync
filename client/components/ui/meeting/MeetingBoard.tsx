@@ -1,5 +1,6 @@
 "use client";
 
+import PeerList1 from "@/components/list/peer/PeerList1";
 import useStore from "@/store/useStore";
 import { useEffect } from "react";
 
@@ -9,6 +10,7 @@ interface ComponentProps {
 
 const MeetingBoard = ({ roomId }: ComponentProps) => {
   const socket = useStore((state) => state.socket);
+  const consumers = useStore((state) => state.consumers);
 
   // cleanup function
   useEffect(() => {
@@ -22,7 +24,12 @@ const MeetingBoard = ({ roomId }: ComponentProps) => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
-  return <div>yo fuckin meeting</div>;
+
+  return (
+    <div>
+      <PeerList1 list={consumers} className="flex gap-2" />
+    </div>
+  );
 };
 
 export default MeetingBoard;

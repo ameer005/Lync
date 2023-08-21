@@ -35,4 +35,5 @@ export enum SocketEvents {
   CONSUMER_CLOSED = "consumer-closed",
   RESUME_CONSUMER = "resume-consumer",
   GET_PRODUCERS = "get-producers",
+  PRODUCER_CLOSED = "producer-closed",
 }

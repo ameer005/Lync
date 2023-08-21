@@ -14,7 +14,7 @@ import {
 } from "react-icons/bi";
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
 import { asyncSocket } from "@/utils/helpers";
-import { loadDevice, initTransports, produce } from "@/app/lib/webrtc-helpers";
+import { loadDevice, initTransports, produce } from "@/lib/webrtc-helpers";
 
 interface ComponentProps {
   setIsJoined: React.Dispatch<React.SetStateAction<boolean>>;
@@ -43,6 +43,7 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
 
   useEffect(() => {
     if (localMedia.mediaStream && videoRef.current) {
+      // console.log("lobby: ", localMedia.mediaStream);
       videoRef.current.srcObject = localMedia.mediaStream;
     }
   }, [localMedia.mediaStream]);

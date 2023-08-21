@@ -5,7 +5,8 @@ import {
   initConsumerTransportEvents,
   initProducerTransportEvents,
   produce,
-} from "@/app/lib/webrtc-helpers";
+} from "@/lib/webrtc-helpers";
+import { asyncSocket } from "@/utils/helpers";
 
 const useRoomClient = (roomId: string) => {
   const setLocalMediaData = useStore((state) => state.setLocalMediaData);
@@ -66,7 +67,13 @@ const useRoomClient = (roomId: string) => {
         mediasoupDevice,
         updateConsumers,
       });
-      produce({ localMedia, producerTransport, updateProducers });
+      produce({
+        localMedia,
+        producerTransport,
+        updateProducers,
+        socket,
+        roomId,
+      });
     }
   }, [producerTransport, consumerTransport]);
 
@@ -87,6 +94,7 @@ const useRoomClient = (roomId: string) => {
 
       const audioTrack = mediaStream.getAudioTracks()[0];
       const videoTrack = mediaStream.getVideoTracks()[0];
+
       setLocalMediaData({ mediaStream, audioTrack, videoTrack });
     } catch (error: any) {
       console.error(error.message);

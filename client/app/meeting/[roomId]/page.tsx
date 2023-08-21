@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import useRoomClient from "@/hooks/useRoomClient";
-import Lobby from "./Lobby";
-import MeetingBoard from "./MeetingBoard";
+import Lobby from "../../../components/ui/meeting/Lobby";
+import MeetingBoard from "../../../components/ui/meeting/MeetingBoard";
 
 interface PageProps {
   params: {

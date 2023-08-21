@@ -19,4 +19,5 @@ type SocketEvents =
   | "produce"
   | "consume"
   | "get-producers"
-  | "resume-consumer";
+  | "resume-consumer"
+  | "producer-closed";
