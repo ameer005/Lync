@@ -14,9 +14,12 @@ const useRoomClient = (roomId: string) => {
   const producerTransport = useStore((state) => state.producerTransport);
   const consumerTransport = useStore((state) => state.consumerTransport);
   const cleanupMeetingData = useStore((state) => state.cleanupMeetingData);
+  const mediasoupDevice = useStore((state) => state.mediasoupDevice);
+  const updateConsumers = useStore((state) => state.updateConsumers);
   const producers = useStore((state) => state.producers);
-  const setMeetingData = useStore((state) => state.setMeetingData);
+  const updateProducers = useStore((state) => state.updateProducers);
   const socket = useStore((state) => state.socket);
+  const consumers = useStore((state) => state.consumers);
 
   //**************************USE EFFECTS**************************//
 
@@ -33,8 +36,12 @@ const useRoomClient = (roomId: string) => {
 
   // TODO will remove it tracking producers
   useEffect(() => {
-    console.log(producers);
+    console.log("producers: ", producers);
   }, [producers]);
+
+  useEffect(() => {
+    console.log("consumers :", consumers);
+  }, [consumers]);
 
   // clean up
   useEffect(() => {
@@ -47,18 +54,21 @@ const useRoomClient = (roomId: string) => {
     toggleLocalStreamControls();
   }, [localPeer.shareCam, localPeer.shareMic]);
 
+  // INITIALIZING TRANSPORTS
   useEffect(() => {
-    if (producerTransport) {
-      initProducerTransportEvents({ producerTransport, roomId, socket });
-      produce({ localMedia, producers, producerTransport, setMeetingData });
-    }
-  }, [producerTransport]);
-
-  useEffect(() => {
-    if (consumerTransport) {
+    if (producerTransport && consumerTransport) {
       initConsumerTransportEvents({ consumerTransport, roomId, socket });
+      initProducerTransportEvents({
+        producerTransport,
+        roomId,
+        socket,
+        consumerTransport,
+        mediasoupDevice,
+        updateConsumers,
+      });
+      produce({ localMedia, producerTransport, updateProducers });
     }
-  }, [consumerTransport]);
+  }, [producerTransport, consumerTransport]);
 
   //**************************FUNCTIONS**************************//
 

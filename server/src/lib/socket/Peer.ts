@@ -67,6 +67,16 @@ class Peer {
   ) {
     let consumerTransport = this.transport.get(consumerTransportId);
 
+    if (!consumerTransport) {
+      logger.error(
+        `consumer transport doesnt exist ${JSON.stringify({
+          consumerTransportId,
+        })}`
+      );
+
+      return;
+    }
+
     let consumer: Consumer | undefined;
 
     try {
@@ -80,6 +90,7 @@ class Peer {
       return;
     }
 
+    // console.log("consumer inside peer: ", consumer);
     if (!consumer) return;
 
     this.consumers.set(consumer?.id!, consumer!);
@@ -114,6 +125,10 @@ class Peer {
 
   getProducer(producerId: string) {
     return this.producers.get(producerId);
+  }
+
+  getConsumer(consumerId: string) {
+    return this.consumers.get(consumerId);
   }
 
   closeProducer(producerId: string) {

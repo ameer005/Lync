@@ -56,7 +56,7 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
       };
 
       // prettier-ignore
-      const roomMembers = await asyncSocket<any>(socket, "join-room", roomId, payload);
+      await asyncSocket<any>(socket, "join-room", roomId, payload);
       const rtpCapabilities = await asyncSocket<RtpCapabilities>(
         socket,
         "get-router-rtp-capabilities",

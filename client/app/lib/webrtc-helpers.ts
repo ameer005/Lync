@@ -10,7 +10,12 @@ import {
 } from "mediasoup-client/lib/types";
 import { asyncSocket } from "@/utils/helpers";
 import { Socket } from "socket.io-client";
-import { MeetingSlice, LocalMedia } from "@/store/slices/meetingSlice";
+import {
+  MeetingSlice,
+  LocalMedia,
+  ConsumerData,
+} from "@/store/slices/meetingSlice";
+import { RemoteProducer } from "@/types/shared";
 
 interface BaseWebrtc {
   roomId: string;
@@ -30,27 +35,29 @@ interface InitTransportProps extends BaseWebrtc {
 
 interface InitProducerTransportEventsProps extends BaseWebrtc {
   producerTransport: Transport<AppData>;
+  mediasoupDevice: Device;
+  consumerTransport: Transport<AppData> | null;
+  updateConsumers: (data: { key: string; value?: ConsumerData }) => void;
 }
 
 interface InitConsumerTransportEventsProps extends BaseWebrtc {
   consumerTransport: Transport<AppData>;
 }
 
-interface ProducerProps {
+interface ProduceProps {
   localMedia: LocalMedia;
   producerTransport: Transport<AppData> | null;
-  producers: Map<string, Producer<AppData>>;
-  setMeetingData: (modal: Partial<MeetingSlice>) => void;
+  updateProducers: (data: { key: string; value?: Producer<AppData> }) => void;
 }
 
-interface GetconsumerStreamProps extends BaseWebrtc {
+interface Consume extends BaseWebrtc {
   mediasoupDevice: Device;
-  setMeetingData: (modal: Partial<MeetingSlice>) => void;
   consumerTransport: Transport<AppData> | null;
-  producerId: string;
+  remoteProducer: RemoteProducer;
+  updateConsumers: (data: { key: string; value?: ConsumerData }) => void;
 }
 
-// functions
+// helpers
 export const loadDevice = async ({
   mediasoupDevice,
   rtpCapabilities,
@@ -60,6 +67,58 @@ export const loadDevice = async ({
   } catch (err) {
     return err;
   }
+};
+
+const consume = async ({
+  socket,
+  mediasoupDevice,
+  consumerTransport,
+  roomId,
+  remoteProducer,
+  updateConsumers,
+}: Consume) => {
+  const { user, producers } = remoteProducer;
+
+  if (!consumerTransport) {
+    console.error("consumer transport is null");
+    return;
+  }
+
+  producers.forEach(async (producerId) => {
+    try {
+      console.log("remote producerId: ", producerId);
+      const { rtpCapabilities } = mediasoupDevice;
+
+      const data = await asyncSocket<ConsumerOptions>(
+        socket,
+        "consume",
+        roomId,
+        consumerTransport?.id,
+        producerId,
+        rtpCapabilities
+      );
+
+      if (!consumerTransport) return;
+
+      // store this consumer to global state
+      const consumer = await consumerTransport.consume(data);
+
+      const stream = new MediaStream();
+      stream.addTrack(consumer.track);
+
+      updateConsumers({ key: consumer.id, value: { consumer, user } });
+
+      const message = await asyncSocket<string>(
+        socket,
+        "resume-consumer",
+        roomId,
+        consumer.id
+      );
+      console.log(message);
+    } catch (err: any) {
+      console.error(err);
+    }
+  });
 };
 
 // **********************************************TRANSPORT FUNCTIONS ***************************************************************//
@@ -108,6 +167,9 @@ export const initProducerTransportEvents = ({
   producerTransport,
   roomId,
   socket,
+  consumerTransport,
+  mediasoupDevice,
+  updateConsumers,
 }: InitProducerTransportEventsProps) => {
   // procucer transport listeners
   producerTransport.on(
@@ -144,6 +206,24 @@ export const initProducerTransportEvents = ({
         );
 
         callback({ id: producerId });
+
+        //TODO will separate it
+        const producers = await asyncSocket<RemoteProducer[]>(
+          socket,
+          "get-producers",
+          roomId
+        );
+
+        producers.forEach((producer) =>
+          consume({
+            consumerTransport,
+            mediasoupDevice,
+            remoteProducer: producer,
+            roomId,
+            socket,
+            updateConsumers,
+          })
+        );
       } catch (err: any) {
         errorback(err);
       }
@@ -219,9 +299,9 @@ export const initConsumerTransportEvents = ({
 export const produce = async ({
   localMedia,
   producerTransport,
-  producers,
-  setMeetingData,
-}: ProducerProps) => {
+  // producers,
+  updateProducers,
+}: ProduceProps) => {
   const params: ProducerOptions = {
     track: localMedia.videoTrack!,
     encodings: [
@@ -250,7 +330,8 @@ export const produce = async ({
   }
 
   const producer = await producerTransport.produce(params);
-  setMeetingData({ producers: { ...producers, [producer.id]: producer } });
+
+  updateProducers({ key: producer.id, value: producer });
 
   producer.on("trackended", () => {
     console.log("track ended");
@@ -259,40 +340,4 @@ export const produce = async ({
   producer.on("transportclose", () => {
     console.log("transport ended");
   });
-};
-
-export const getconsumerStream = async ({
-  producerId,
-  consumerTransport,
-  mediasoupDevice,
-  roomId,
-  setMeetingData,
-  socket,
-}: GetconsumerStreamProps) => {
-  try {
-    const { rtpCapabilities } = mediasoupDevice;
-
-    const data = await asyncSocket<ConsumerOptions>(
-      socket,
-      "consume",
-      roomId,
-      consumerTransport?.id,
-      producerId,
-      rtpCapabilities
-    );
-
-    const consumer = await consumerTransport?.consume(data);
-    const stream = new MediaStream();
-    if (consumer) {
-      stream.addTrack(consumer.track);
-    }
-
-    return {
-      consumer,
-      stream,
-      kind: data.kind,
-    };
-  } catch (err: any) {
-    console.error(err);
-  }
 };

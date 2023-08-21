@@ -51,23 +51,7 @@ const webSockets = async (io: IO) => {
       }
 
       addPeerToRoom(roomId, new Peer(socket.id, user.id, user.name));
-      cb({ status: CbStatus.SUCCESS, data: getRoom(roomId)?.toJson() });
-    });
-
-    socket.on(SocketEvents.LEAVE_ROOM, (roomId: string, cb) => {
-      const room = getRoom(roomId);
-
-      // TODO not working properly
-      if (!room?.isPeerInRoom(socket.id)) {
-        return;
-      }
-
-      room.removePeer(socket.id);
-
-      if (room.getPeers().size === 0) {
-        logger.info(`deleting room: ${roomId}`);
-        deleteRoom(roomId);
-      }
+      cb({ status: CbStatus.SUCCESS, data: "successfull" });
     });
 
     // media soup handshake
@@ -224,6 +208,50 @@ const webSockets = async (io: IO) => {
         cb({ status: CbStatus.SUCCESS, data: res });
       }
     );
+
+    socket.on(
+      SocketEvents.RESUME_CONSUMER,
+      async (roomId: string, consumerId: string, cb) => {
+        const room = getRoom(roomId);
+
+        if (!room) {
+          cb({ status: CbStatus.FAILED, message: "Room doesn't exit" });
+          return;
+        }
+
+        await room.getPeers().get(socket.id)?.getConsumer(consumerId)?.resume();
+
+        logger.info(`consumer resumed ${JSON.stringify({ consumerId })}`);
+        cb({ status: CbStatus.SUCCESS, data: "consumer resumed" });
+      }
+    );
+
+    socket.on(SocketEvents.LEAVE_ROOM, (roomId: string, cb) => {
+      const room = getRoom(roomId);
+
+      if (!room?.isPeerInRoom(socket.id)) {
+        return;
+      }
+
+      room.removePeer(socket.id);
+
+      if (room.getPeers().size === 0) {
+        logger.info(`deleting room: ${roomId}`);
+        deleteRoom(roomId);
+      }
+    });
+
+    socket.on(SocketEvents.GET_PRODUCERS, (roomId: string, cb) => {
+      const room = getRoom(roomId);
+
+      if (!room) {
+        cb({ status: CbStatus.FAILED, message: "Room doesn't exit" });
+        return;
+      }
+
+      const proucers = room.getProducerListForPeer();
+      cb({ status: CbStatus.SUCCESS, data: proucers });
+    });
 
     // socket.on("send-message", (roomId, data) => {
     //   io.to(roomId).emit("get-message", data);

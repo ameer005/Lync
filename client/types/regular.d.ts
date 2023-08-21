@@ -17,4 +17,6 @@ type SocketEvents =
   | "create-webrtc-transport"
   | "connect-transport"
   | "produce"
-  | "consume";
+  | "consume"
+  | "get-producers"
+  | "resume-consumer";

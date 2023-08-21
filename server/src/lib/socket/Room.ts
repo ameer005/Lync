@@ -164,12 +164,18 @@ class Room {
   }
 
   getProducerListForPeer() {
-    let producerList: { producerId: string }[] = [];
+    let producerList: {
+      producers: string[];
+      user: { name: string; socketId: string; id: string };
+    }[] = [];
+
     this.peers.forEach((peer) => {
-      peer.producers.forEach((producer) => {
-        producerList.push({ producerId: producer.id });
+      producerList.push({
+        producers: [...peer.producers.keys()],
+        user: { name: peer.name, socketId: peer.socketId, id: peer.id },
       });
     });
+
     return producerList;
   }
 
