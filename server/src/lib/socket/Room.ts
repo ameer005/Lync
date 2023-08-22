@@ -57,6 +57,7 @@ class Room {
       preferUdp: true,
       initialAvailableOutgoingBitrate,
     });
+    console.log(config.mediasoup.webRtcTransportOptions.listenIps);
 
     if (maxIncomingBitrate) {
       try {

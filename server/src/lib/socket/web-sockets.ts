@@ -77,14 +77,15 @@ const webSockets = async (io: IO) => {
           return;
         }
 
-        logger.info(
-          `Creating webrtc transport for ${JSON.stringify({
-            name: room?.getPeers().get(socket.id)?.name,
-          })}`
-        );
-
         try {
           const { params } = await room?.createWebRtcTransport(socket.id);
+
+          logger.info(
+            ` webrtc transport Created ${JSON.stringify({
+              name: room?.getPeers().get(socket.id)?.name,
+              transportId: params.id,
+            })}`
+          );
 
           cb({ status: CbStatus.SUCCESS, data: params });
         } catch (err: any) {
@@ -109,17 +110,18 @@ const webSockets = async (io: IO) => {
           return;
         }
 
-        logger.info(
-          `Connecting  transport for ${JSON.stringify({
-            name: room?.getPeers().get(socket.id)?.name,
-          })}`
-        );
-
         try {
           await room.connectPeerTransport(
             socket.id,
             transportId,
             dtlsParameters
+          );
+
+          logger.info(
+            `Transport connected ${JSON.stringify({
+              name: room?.getPeers().get(socket.id)?.name,
+              transportId: transportId,
+            })}`
           );
 
           cb({
@@ -156,7 +158,7 @@ const webSockets = async (io: IO) => {
           kind
         );
 
-        console.info(
+        logger.info(
           `producer created: ${JSON.stringify({
             type: kind,
             name: room.getPeers().get(socket.id)?.name,
@@ -196,7 +198,7 @@ const webSockets = async (io: IO) => {
           return;
         }
 
-        console.info(
+        logger.info(
           `consumer created: ${JSON.stringify({
             type: res?.kind,
             name: room.getPeers().get(socket.id)?.name,

@@ -73,7 +73,7 @@ export const config = {
       listenIps: [
         {
           ip: "0.0.0.0", //process.env.MEDIASOUP_LISTEN_IP ||
-          announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
+          announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || "127.0.0.1",
         },
       ] as TransportListenIp[],
       initialAvailableOutgoingBitrate: 1000000,

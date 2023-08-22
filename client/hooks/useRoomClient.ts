@@ -24,6 +24,12 @@ const useRoomClient = (roomId: string) => {
 
   //**************************USE EFFECTS**************************//
 
+  useEffect(() => {
+    socket.on("new-producer", (res: any) => {
+      console.log("yooooo");
+    });
+  }, []);
+
   // Initializing data
   useEffect(() => {
     startLocalStream();
