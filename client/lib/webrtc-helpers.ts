@@ -73,7 +73,7 @@ export const loadDevice = async ({
   }
 };
 
-const consume = async ({
+export const consume = async ({
   socket,
   mediasoupDevice,
   consumerTransport,
@@ -248,15 +248,12 @@ export const initProducerTransportEvents = ({
   producerTransport.on("connectionstatechange", (state) => {
     switch (state) {
       case "connecting":
-        console.log("locat stream connecting");
         break;
 
       case "connected":
-        console.log("local stream connected");
         break;
 
       case "failed":
-        console.log("tranport closed");
         producerTransport.close();
         break;
 
@@ -301,7 +298,6 @@ export const initConsumerTransportEvents = ({
         break;
 
       case "failed":
-        console.log("tranport closed");
         consumerTransport.close();
         break;
 

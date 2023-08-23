@@ -2,11 +2,13 @@
 import { useEffect, useState } from "react";
 import useStore from "@/store/useStore";
 import {
+  consume,
   initConsumerTransportEvents,
   initProducerTransportEvents,
   produce,
 } from "@/lib/webrtc-helpers";
 import { asyncSocket } from "@/utils/helpers";
+import { RemoteProducer } from "@/types/shared";
 
 const useRoomClient = (roomId: string) => {
   const setLocalMediaData = useStore((state) => state.setLocalMediaData);
@@ -22,13 +24,43 @@ const useRoomClient = (roomId: string) => {
   const socket = useStore((state) => state.socket);
   const consumers = useStore((state) => state.consumers);
 
+  const [newProducer, setNewProducer] = useState<RemoteProducer | null>(null);
+  const [consumerLeftId, setConsumerLefId] = useState("");
+
   //**************************USE EFFECTS**************************//
 
   useEffect(() => {
-    socket.on("new-producer", (res: any) => {
-      console.log("yooooo");
+    socket.on("new-producer", (res: RemoteProducer) => {
+      setNewProducer(res);
+    });
+
+    socket.on("consumer-closed", (id: string) => {
+      setConsumerLefId(id);
     });
   }, []);
+
+  useEffect(() => {
+    // TODO refactor it so it can handle multiple stream producers joining at the same time
+    // avoid consuming same stream producer multiple times
+
+    if (newProducer) {
+      consume({
+        consumerTransport,
+        mediasoupDevice,
+        remoteProducer: newProducer,
+        roomId,
+        socket,
+        updateConsumers,
+      });
+      setNewProducer(null);
+    }
+  }, [newProducer]);
+
+  useEffect(() => {
+    if (consumerLeftId) {
+      updateConsumers({ key: consumerLeftId });
+    }
+  }, [consumerLeftId]);
 
   // Initializing data
   useEffect(() => {
@@ -49,17 +81,6 @@ const useRoomClient = (roomId: string) => {
   useEffect(() => {
     console.log("consumers :", consumers);
   }, [consumers]);
-
-  // clean up
-  useEffect(() => {
-    return () => {
-      cleanupLocalMedia();
-    };
-  }, [localMedia]);
-
-  useEffect(() => {
-    toggleLocalStreamControls();
-  }, [localPeer.shareCam, localPeer.shareMic]);
 
   // INITIALIZING TRANSPORTS
   useEffect(() => {
@@ -82,6 +103,29 @@ const useRoomClient = (roomId: string) => {
       });
     }
   }, [producerTransport, consumerTransport]);
+
+  // CLEANUP FUNCTION
+  useEffect(() => {
+    return () => {
+      cleanupLocalMedia();
+    };
+  }, [localMedia]);
+
+  useEffect(() => {
+    toggleLocalStreamControls();
+  }, [localPeer.shareCam, localPeer.shareMic]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent): void => {
+      socket.emit("leave-room", roomId);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      socket.emit("leave-room", roomId);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   //**************************FUNCTIONS**************************//
 

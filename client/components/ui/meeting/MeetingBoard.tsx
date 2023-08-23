@@ -13,17 +13,6 @@ const MeetingBoard = ({ roomId }: ComponentProps) => {
   const consumers = useStore((state) => state.consumers);
 
   // cleanup function
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent): void => {
-      socket.emit("leave-room", roomId);
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      socket.emit("leave-room", roomId);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, []);
 
   return (
     <div>

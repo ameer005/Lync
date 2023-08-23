@@ -110,14 +110,22 @@ class Room {
     kind: MediaKind
   ) {
     return new Promise(async (resolve, _) => {
-      let producer = await this.peers
-        .get(socketId)
-        ?.createProducer(producerTransportId, rtpParameters, kind);
+      const peer = this.peers.get(socketId);
+      let producer = await peer?.createProducer(
+        producerTransportId,
+        rtpParameters,
+        kind
+      );
 
       if (!producer) return;
+
       this.broadCast(SocketEvents.NEW_PRODUCER, {
-        producer_id: producer.id,
-        producer_socketId: socketId,
+        user: {
+          name: peer?.name,
+          socketId: peer?.socketId,
+          id: peer?.id,
+        },
+        producers: [producer.id],
       });
 
       resolve(producer.id);

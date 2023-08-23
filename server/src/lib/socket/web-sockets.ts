@@ -51,6 +51,7 @@ const webSockets = async (io: IO) => {
       }
 
       addPeerToRoom(roomId, new Peer(socket.id, user.id, user.name));
+      socket.join(roomId);
       cb({ status: CbStatus.SUCCESS, data: "successfull" });
     });
 
@@ -248,6 +249,7 @@ const webSockets = async (io: IO) => {
       }
 
       room.removePeer(socket.id);
+      socket.leave(roomId);
 
       if (room.getPeers().size === 0) {
         logger.info(`deleting room: ${roomId}`);

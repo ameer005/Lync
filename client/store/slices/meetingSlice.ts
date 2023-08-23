@@ -70,14 +70,7 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
   setLocalMediaData: (data: LocalMedia) => {
     set({ localMedia: data });
   },
-  cleanupMeetingData: () => {
-    set({
-      consumerTransport: null,
-      producerTransport: null,
-      producers: new Map(),
-      consumers: new Map(),
-    });
-  },
+
   updateProducers: ({ key, value }) => {
     set((state) => {
       const updatedProducers = new Map(state.producers);
@@ -102,6 +95,16 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
       }
 
       return { consumers: updatedConsumers };
+    });
+  },
+
+  cleanupMeetingData: () => {
+    set({
+      consumerTransport: null,
+      producerTransport: null,
+      producers: new Map(),
+      consumers: new Map(),
+      mediasoupDevice: new mediasoup.Device(),
     });
   },
 });
