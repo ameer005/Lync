@@ -1,10 +1,10 @@
 "use client";
 
-import { ConsumerData } from "@/store/slices/meetingSlice";
+import { Peer } from "@/store/slices/meetingSlice";
 import PeerCard from "./PeerCard";
 
 interface ComponentProps {
-  list: Map<string, ConsumerData>;
+  list: Map<string, Peer>;
   className: string;
 }
 
@@ -12,7 +12,7 @@ const PeerList1 = ({ list, className }: ComponentProps) => {
   const renderList = () => {
     const cards = [];
     for (let value of list.values()) {
-      cards.push(<PeerCard key={value.consumer.id} data={value} />);
+      cards.push(<PeerCard key={value.id} data={value} />);
     }
 
     return cards;

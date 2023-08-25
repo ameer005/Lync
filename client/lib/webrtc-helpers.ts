@@ -7,6 +7,7 @@ import {
   ProducerOptions,
   Producer,
   ConsumerOptions,
+  Consumer,
 } from "mediasoup-client/lib/types";
 import { asyncSocket } from "@/utils/helpers";
 import { Socket } from "socket.io-client";
@@ -14,6 +15,7 @@ import {
   MeetingSlice,
   LocalMedia,
   ConsumerData,
+  Peer,
 } from "@/store/slices/meetingSlice";
 import { RemoteProducer } from "@/types/shared";
 
@@ -35,9 +37,6 @@ interface InitTransportProps extends BaseWebrtc {
 
 interface InitProducerTransportEventsProps extends BaseWebrtc {
   producerTransport: Transport<AppData>;
-  mediasoupDevice: Device;
-  consumerTransport: Transport<AppData> | null;
-  updateConsumers: (data: { key: string; value?: ConsumerData }) => void;
 }
 
 interface InitConsumerTransportEventsProps extends BaseWebrtc {
@@ -55,87 +54,72 @@ interface Consume extends BaseWebrtc {
   consumerTransport: Transport<AppData> | null;
   remoteProducer: RemoteProducer;
   updateConsumers: (data: { key: string; value?: ConsumerData }) => void;
+  setMeetingData: (modal: Partial<MeetingSlice>) => void;
+  peers: Map<string, Peer>;
 }
 
 interface CloseProducerProps extends BaseWebrtc {
   producer: Producer<AppData>;
 }
 
-// helpers
-export const loadDevice = async ({
-  mediasoupDevice,
-  rtpCapabilities,
-}: LoadDeviceProps) => {
-  try {
-    await mediasoupDevice.load({ routerRtpCapabilities: rtpCapabilities });
-  } catch (err) {
-    return err;
-  }
+interface AddConsumer {
+  setMeetingData: (modal: Partial<MeetingSlice>) => void;
+  updateConsumers: (data: { key: string; value?: ConsumerData }) => void;
+  peers: Map<string, Peer>;
+  consumer: Consumer<AppData>;
+  user: {
+    name: string;
+    socketId: string;
+    id: string;
+  };
+}
+
+// ********************************************** FUNCTIONS ***************************************************************//
+const closeProducer = async ({
+  producer,
+  roomId,
+  socket,
+}: CloseProducerProps) => {
+  asyncSocket(socket, "producer-closed", roomId, producer.id);
 };
 
-export const consume = async ({
-  socket,
-  mediasoupDevice,
-  consumerTransport,
-  roomId,
-  remoteProducer,
+// TODO make add consumer method
+// TODO get already existing members and try to find an appropriate place to call them
+const addConsumer = ({
+  setMeetingData,
   updateConsumers,
-}: Consume) => {
-  const { user, producers } = remoteProducer;
-
-  if (!consumerTransport) {
-    console.error("consumer transport is null");
+  peers,
+  user,
+  consumer,
+}: AddConsumer) => {
+  // chedck if peer already exist
+  // if it exist then add new comsumer to the consumers array inside peers
+  if (peers.has(user.id)) {
+    console.log("yoooo");
     return;
   }
 
-  producers.forEach(async (producerId) => {
-    try {
-      const { rtpCapabilities } = mediasoupDevice;
+  // if not create new peer
+  const newPeer: Peer = {
+    name: user.name,
+    id: user.id,
+    socketId: user.socketId,
+    consumers: [consumer],
+  };
 
-      const data = await asyncSocket<ConsumerOptions>(
-        socket,
-        "consume",
-        roomId,
-        consumerTransport?.id,
-        producerId,
-        rtpCapabilities
-      );
+  const updatedPeers = new Map(peers);
+  updatedPeers.set(newPeer.id, newPeer);
+  setMeetingData({ peers: updatedPeers });
 
-      if (!consumerTransport) return;
-
-      // store this consumer to global state
-      const consumer = await consumerTransport.consume({
-        id: data.id,
-        producerId,
-        kind: data.kind,
-        rtpParameters: data.rtpParameters,
-      });
-
-      updateConsumers({ key: consumer.id, value: { consumer, user } });
-
-      const message = await asyncSocket<string>(
-        socket,
-        "resume-consumer",
-        roomId,
-        consumer.id
-      );
-
-      console.log(message);
-
-      consumer.on("trackended", () => {
-        console.log("consumer track ended");
-      });
-
-      consumer.on("transportclose", () => {
-        console.log("consumer transport close");
-      });
-    } catch (err: any) {
-      console.error(err);
-    }
-  });
+  // mandatory add consumer to consumers global map
+  updateConsumers({ key: consumer.id, value: { consumer, user } });
 };
 
+// TODO remove consumer from both peer's consumers array and global consumer map
+const removeConsumer = () => {};
+
 // **********************************************TRANSPORT FUNCTIONS ***************************************************************//
+
 export const initTransports = async ({
   socket,
   mediasoupDevice,
@@ -181,9 +165,6 @@ export const initProducerTransportEvents = ({
   producerTransport,
   roomId,
   socket,
-  consumerTransport,
-  mediasoupDevice,
-  updateConsumers,
 }: InitProducerTransportEventsProps) => {
   // procucer transport listeners
   producerTransport.on(
@@ -221,24 +202,6 @@ export const initProducerTransportEvents = ({
         console.info(`produce event: ${producerId}`);
 
         callback({ id: producerId });
-
-        //TODO will separate it
-        const producers = await asyncSocket<RemoteProducer[]>(
-          socket,
-          "get-producers",
-          roomId
-        );
-
-        producers.forEach((producer) =>
-          consume({
-            consumerTransport,
-            mediasoupDevice,
-            remoteProducer: producer,
-            roomId,
-            socket,
-            updateConsumers,
-          })
-        );
       } catch (err: any) {
         errorback(err);
       }
@@ -307,14 +270,6 @@ export const initConsumerTransportEvents = ({
   });
 };
 
-const closeProducer = async ({
-  producer,
-  roomId,
-  socket,
-}: CloseProducerProps) => {
-  asyncSocket(socket, "producer-closed", roomId, producer.id);
-};
-
 // **************************** MAIN FUNCTIONS ****************************** //
 export const produce = async ({
   localMedia,
@@ -376,4 +331,74 @@ export const produce = async ({
     closeProducer({ socket, roomId, producer });
     updateProducers({ key: producer.id });
   });
+};
+
+export const consume = async ({
+  socket,
+  mediasoupDevice,
+  consumerTransport,
+  roomId,
+  remoteProducer,
+  updateConsumers,
+  peers,
+  setMeetingData,
+}: Consume) => {
+  const { user, producers } = remoteProducer;
+
+  if (!consumerTransport) {
+    console.error("consumer transport is null");
+    return;
+  }
+
+  producers.forEach(async (producerId) => {
+    try {
+      const { rtpCapabilities } = mediasoupDevice;
+
+      const data = await asyncSocket<ConsumerOptions>(
+        socket,
+        "consume",
+        roomId,
+        consumerTransport?.id,
+        producerId,
+        rtpCapabilities
+      );
+
+      if (!consumerTransport) return;
+
+      // store this consumer to global state
+      const consumer = await consumerTransport.consume({
+        id: data.id,
+        producerId,
+        kind: data.kind,
+        rtpParameters: data.rtpParameters,
+      });
+
+      // resuming consumer
+      await asyncSocket<string>(socket, "resume-consumer", roomId, consumer.id);
+
+      // updateConsumers({ key: consumer.id, value: { consumer, user } });
+      addConsumer({ consumer, peers, setMeetingData, updateConsumers, user });
+
+      consumer.on("trackended", () => {
+        console.log("consumer track ended");
+      });
+
+      consumer.on("transportclose", () => {
+        console.log("consumer transport close");
+      });
+    } catch (err: any) {
+      console.error(err);
+    }
+  });
+};
+
+export const loadDevice = async ({
+  mediasoupDevice,
+  rtpCapabilities,
+}: LoadDeviceProps) => {
+  try {
+    await mediasoupDevice.load({ routerRtpCapabilities: rtpCapabilities });
+  } catch (err) {
+    return err;
+  }
 };

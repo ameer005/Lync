@@ -13,6 +13,13 @@ type LocalPeer = {
   shareCam: boolean;
 };
 
+export type Peer = {
+  name: string;
+  socketId: string;
+  id: string;
+  consumers: Consumer<AppData>[];
+};
+
 export type ConsumerData = {
   consumer: Consumer<AppData>;
   user: {
@@ -29,11 +36,16 @@ export type LocalMedia = {
 };
 
 export interface MeetingSlice {
+  me: {
+    id: string | null;
+  };
+  peers: Map<string, Peer>;
+  producers: Map<string, Producer<AppData>>;
+  consumers: Map<string, ConsumerData>;
+
   mediasoupDevice: Device;
   producerTransport: Transport<AppData> | null;
   consumerTransport: Transport<AppData> | null;
-  producers: Map<string, Producer<AppData>>;
-  consumers: Map<string, ConsumerData>;
   localMedia: LocalMedia;
   localPeer: LocalPeer;
   setMeetingData: (modal: Partial<MeetingSlice>) => void;
@@ -45,6 +57,10 @@ export interface MeetingSlice {
 }
 
 const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
+  me: {
+    id: null,
+  },
+  peers: new Map(),
   producers: new Map(),
   producerTransport: null,
   consumerTransport: null,
@@ -105,6 +121,9 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
       producers: new Map(),
       consumers: new Map(),
       mediasoupDevice: new mediasoup.Device(),
+      me: {
+        id: null,
+      },
     });
   },
 });

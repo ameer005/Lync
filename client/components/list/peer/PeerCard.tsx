@@ -1,37 +1,27 @@
 "use client";
-import { ConsumerData } from "@/store/slices/meetingSlice";
+import { Peer } from "@/store/slices/meetingSlice";
 import useStore from "@/store/useStore";
 import { useEffect, useRef } from "react";
+import RenderVideo from "./RenderVideo";
 
 interface ComponentProps {
-  data: ConsumerData;
+  data: Peer;
 }
 
 const PeerCard = ({ data }: ComponentProps) => {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const renderList = () => {
+    return data.consumers.map((consumer) => {
+      return (
+        <RenderVideo
+          user={{ id: data.id, name: data.name, socketId: data.socketId }}
+          key={consumer.id}
+          consumer={consumer}
+        />
+      );
+    });
+  };
 
-  useEffect(() => {
-    if (videoRef.current) {
-      const { track } = data.consumer;
-      const stream = new MediaStream([track]);
-
-      videoRef.current.srcObject = stream;
-    }
-  }, []);
-
-  return (
-    <div className="h-[15rem] w-[20rem] bg-colorPrimary relative">
-      <video
-        autoPlay
-        className="absolute inset-0 object-cover"
-        ref={videoRef}
-      ></video>
-
-      <div className="bg-black font-bold p-4 absolute top-[50%] left-[50%]">
-        {data.user.name}
-      </div>
-    </div>
-  );
+  return <div className="flex gap-2">{renderList()}</div>;
 };
 
 export default PeerCard;

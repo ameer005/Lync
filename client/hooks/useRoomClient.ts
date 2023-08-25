@@ -23,6 +23,8 @@ const useRoomClient = (roomId: string) => {
   const updateProducers = useStore((state) => state.updateProducers);
   const socket = useStore((state) => state.socket);
   const consumers = useStore((state) => state.consumers);
+  const setMeetingData = useStore((state) => state.setMeetingData);
+  const peers = useStore((state) => state.peers);
 
   const [newProducer, setNewProducer] = useState<RemoteProducer | null>(null);
   const [consumerLeftId, setConsumerLefId] = useState("");
@@ -51,6 +53,8 @@ const useRoomClient = (roomId: string) => {
         roomId,
         socket,
         updateConsumers,
+        peers,
+        setMeetingData,
       });
       setNewProducer(null);
     }
@@ -79,6 +83,12 @@ const useRoomClient = (roomId: string) => {
   }, [producers]);
 
   useEffect(() => {
+    if (peers) {
+      console.log("peers: ", peers);
+    }
+  }, [peers]);
+
+  useEffect(() => {
     console.log("consumers :", consumers);
   }, [consumers]);
 
@@ -90,9 +100,6 @@ const useRoomClient = (roomId: string) => {
         producerTransport,
         roomId,
         socket,
-        consumerTransport,
-        mediasoupDevice,
-        updateConsumers,
       });
       produce({
         localMedia,

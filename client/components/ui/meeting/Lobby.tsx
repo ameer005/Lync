@@ -56,6 +56,8 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
         id: user?._id || nanoid(),
       };
 
+      setMeetingData({ me: { id: payload.id } });
+
       // prettier-ignore
       await asyncSocket<any>(socket, "join-room", roomId, payload);
       const rtpCapabilities = await asyncSocket<RtpCapabilities>(
