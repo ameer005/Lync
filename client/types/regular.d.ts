@@ -1,9 +1,3 @@
-// interface SocketResponse<T> {
-//   status: "success" | "failed";
-//   data: T;
-//   message?: string;
-// }
-
 type SocketResponse<T> =
   | { status: "success"; data: T }
   | { status: "failed"; message: string };
@@ -20,4 +14,5 @@ type SocketEvents =
   | "consume"
   | "get-producers"
   | "resume-consumer"
-  | "producer-closed";
+  | "producer-closed"
+  | "new-producer";

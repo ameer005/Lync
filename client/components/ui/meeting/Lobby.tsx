@@ -12,27 +12,20 @@ import {
   BiMicrophone,
   BiMicrophoneOff,
 } from "react-icons/bi";
-import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters";
-import { asyncSocket } from "@/utils/helpers";
-import { loadDevice, initTransports, produce } from "@/lib/webrtc-helpers";
+import RoomClient from "@/lib/roomClient";
 
 interface ComponentProps {
-  setIsJoined: React.Dispatch<React.SetStateAction<boolean>>;
   roomId: string;
+  roomClient: RoomClient;
 }
 
-const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
+const Lobby = ({ roomId, roomClient }: ComponentProps) => {
   const user = useStore((state) => state.user);
   const isPageLoaded = usePageLoaded();
   const [name, setName] = useState("");
-  const socket = useStore((state) => state.socket);
   const router = useRouter();
-  const localPeer = useStore((state) => state.localPeer);
-  const setLocalPeerData = useStore((state) => state.setLocalPeerData);
   const localMedia = useStore((state) => state.localMedia);
-  const mediasoupDevice = useStore((state) => state.mediasoupDevice);
   const setMeetingData = useStore((state) => state.setMeetingData);
-
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
@@ -56,24 +49,8 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
         id: user?._id || nanoid(),
       };
 
-      setMeetingData({ me: { id: payload.id } });
-
-      // prettier-ignore
-      await asyncSocket<any>(socket, "join-room", roomId, payload);
-      const rtpCapabilities = await asyncSocket<RtpCapabilities>(
-        socket,
-        "get-router-rtp-capabilities",
-        roomId
-      );
-
-      await loadDevice({ mediasoupDevice, rtpCapabilities });
-      await initTransports({
-        socket,
-        roomId,
-        mediasoupDevice,
-        setMeetingData,
-      });
-      setIsJoined(true);
+      await roomClient.joinRoom(payload);
+      setMeetingData({ isJoinedRoom: true });
     } catch (err) {
       // TODO
       // implement toas notification
@@ -102,36 +79,26 @@ const Lobby = ({ setIsJoined, roomId }: ComponentProps) => {
                 <div className="absolute left-[50%] flex items-center gap-3 -translate-x-[50%] bottom-3">
                   <VideoControlBtn
                     className={`h-14 w-14 sm:h-10 sm:w-10 text-lg border-2  ut-animation  ${
-                      localPeer.shareCam
+                      localMedia.shareCam
                         ? "border-zinc-500 hover:bg-colorText/20 "
                         : "bg-red-500 border-transparent"
                     }`}
                     falseLogo={<BiVideoOff />}
-                    state={localPeer.shareCam}
+                    state={localMedia.shareCam}
                     trueLogo={<BiVideo />}
-                    onClick={() => {
-                      setLocalPeerData({
-                        ...localPeer,
-                        shareCam: !localPeer.shareCam,
-                      });
-                    }}
+                    onClick={() => {}}
                   />
 
                   <VideoControlBtn
                     className={`h-14 w-14 sm:h-10 sm:w-10 text-lg border-2  ut-animation  ${
-                      localPeer.shareMic
+                      localMedia.shareMic
                         ? "border-zinc-500 hover:bg-colorText/20 "
                         : "bg-red-500 border-transparent"
                     }`}
                     falseLogo={<BiMicrophoneOff />}
-                    state={localPeer.shareMic}
+                    state={localMedia.shareMic}
                     trueLogo={<BiMicrophone />}
-                    onClick={() => {
-                      setLocalPeerData({
-                        ...localPeer,
-                        shareMic: !localPeer.shareMic,
-                      });
-                    }}
+                    onClick={() => {}}
                   />
                 </div>
               </>

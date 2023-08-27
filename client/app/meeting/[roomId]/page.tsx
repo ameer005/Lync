@@ -4,6 +4,8 @@ import { useState } from "react";
 import useRoomClient from "@/hooks/useRoomClient";
 import Lobby from "../../../components/ui/meeting/Lobby";
 import MeetingBoard from "../../../components/ui/meeting/MeetingBoard";
+import useStore from "@/store/useStore";
+import RoomClient from "@/lib/roomClient";
 
 interface PageProps {
   params: {
@@ -12,12 +14,15 @@ interface PageProps {
 }
 
 const MeetingPage = ({ params }: PageProps) => {
-  const [isJoined, setIsJoined] = useState(false);
+  const isJoinedRoom = useStore((state) => state.isJoinedRoom);
+  const [roomClient, setRoomClient] = useState<RoomClient>(
+    new RoomClient(params.roomId)
+  );
   // initializing rooms data
-  useRoomClient(params.roomId);
+  useRoomClient({ roomClient, roomId: params.roomId });
 
-  if (!isJoined) {
-    return <Lobby roomId={params.roomId} setIsJoined={setIsJoined} />;
+  if (!isJoinedRoom) {
+    return <Lobby roomId={params.roomId} roomClient={roomClient} />;
   }
 
   return (

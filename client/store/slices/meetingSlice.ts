@@ -1,17 +1,7 @@
 import { StateCreator } from "zustand";
 import { Device } from "mediasoup-client/lib/types";
 import * as mediasoup from "mediasoup-client";
-import {
-  Transport,
-  AppData,
-  Producer,
-  Consumer,
-} from "mediasoup-client/lib/types";
-
-type LocalPeer = {
-  shareMic: boolean;
-  shareCam: boolean;
-};
+import { AppData, Consumer } from "mediasoup-client/lib/types";
 
 export type Peer = {
   name: string;
@@ -33,6 +23,8 @@ export type LocalMedia = {
   mediaStream: MediaStream | null;
   audioTrack: MediaStreamTrack | null;
   videoTrack: MediaStreamTrack | null;
+  shareMic: boolean;
+  shareCam: boolean;
 };
 
 export interface MeetingSlice {
@@ -40,20 +32,10 @@ export interface MeetingSlice {
     id: string | null;
   };
   peers: Map<string, Peer>;
-  producers: Map<string, Producer<AppData>>;
-  consumers: Map<string, ConsumerData>;
-
-  mediasoupDevice: Device;
-  producerTransport: Transport<AppData> | null;
-  consumerTransport: Transport<AppData> | null;
+  isJoinedRoom: boolean;
   localMedia: LocalMedia;
-  localPeer: LocalPeer;
   setMeetingData: (modal: Partial<MeetingSlice>) => void;
-  setLocalPeerData: (data: LocalPeer) => void;
   setLocalMediaData: (data: LocalMedia) => void;
-  cleanupMeetingData: () => void;
-  updateProducers: (data: { key: string; value?: Producer<AppData> }) => void;
-  updateConsumers: (data: { key: string; value?: ConsumerData }) => void;
 }
 
 const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
@@ -61,15 +43,13 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
     id: null,
   },
   peers: new Map(),
-  producers: new Map(),
-  producerTransport: null,
-  consumerTransport: null,
-  consumers: new Map(),
-  mediasoupDevice: new mediasoup.Device(),
+  isJoinedRoom: false,
   localMedia: {
     mediaStream: null,
     audioTrack: null,
     videoTrack: null,
+    shareCam: false,
+    shareMic: false,
   },
   localPeer: {
     shareMic: true,
@@ -80,51 +60,8 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
   setMeetingData: (modal: Partial<MeetingSlice>) => {
     set(modal);
   },
-  setLocalPeerData: (data: LocalPeer) => {
-    set({ localPeer: data });
-  },
   setLocalMediaData: (data: LocalMedia) => {
     set({ localMedia: data });
-  },
-
-  updateProducers: ({ key, value }) => {
-    set((state) => {
-      const updatedProducers = new Map(state.producers);
-
-      if (value) {
-        updatedProducers.set(key, value);
-      } else {
-        updatedProducers.delete(key);
-      }
-
-      return { producers: updatedProducers };
-    });
-  },
-  updateConsumers: ({ key, value }) => {
-    set((state) => {
-      const updatedConsumers = new Map(state.consumers);
-
-      if (value) {
-        updatedConsumers.set(key, value);
-      } else {
-        updatedConsumers.delete(key);
-      }
-
-      return { consumers: updatedConsumers };
-    });
-  },
-
-  cleanupMeetingData: () => {
-    set({
-      consumerTransport: null,
-      producerTransport: null,
-      producers: new Map(),
-      consumers: new Map(),
-      mediasoupDevice: new mediasoup.Device(),
-      me: {
-        id: null,
-      },
-    });
   },
 });
 
