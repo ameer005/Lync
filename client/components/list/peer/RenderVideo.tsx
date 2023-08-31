@@ -1,20 +1,18 @@
-import { Consumer } from "mediasoup-client/lib/Consumer";
-import { AppData } from "mediasoup-client/lib/types";
+import useStore from "@/store/useStore";
+
 import { useEffect, useRef } from "react";
 
 interface ComponentProps {
-  consumer: Consumer<AppData>;
+  stream: MediaStream;
   user: { name: string; id: string; socketId: string };
 }
 
-const RenderVideo = ({ consumer, user }: ComponentProps) => {
+const RenderVideo = ({ stream, user }: ComponentProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const me = useStore((state) => state.me);
 
   useEffect(() => {
     if (videoRef.current) {
-      const { track } = consumer;
-      const stream = new MediaStream([track]);
-
       videoRef.current.srcObject = stream;
     }
   }, []);
@@ -22,6 +20,7 @@ const RenderVideo = ({ consumer, user }: ComponentProps) => {
   return (
     <div className="h-[15rem] w-[20rem]   relative">
       <video
+        muted={me.id === user.id}
         autoPlay
         className="absolute inset-0 object-cover"
         ref={videoRef}

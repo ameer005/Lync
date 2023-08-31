@@ -1,6 +1,4 @@
 import { StateCreator } from "zustand";
-import { Device } from "mediasoup-client/lib/types";
-import * as mediasoup from "mediasoup-client";
 import { AppData, Consumer } from "mediasoup-client/lib/types";
 
 export type Peer = {
@@ -8,6 +6,11 @@ export type Peer = {
   socketId: string;
   id: string;
   consumers: Consumer<AppData>[];
+};
+
+type LocalPeer = {
+  shareMic: boolean;
+  shareCam: boolean;
 };
 
 export type ConsumerData = {
@@ -23,8 +26,6 @@ export type LocalMedia = {
   mediaStream: MediaStream | null;
   audioTrack: MediaStreamTrack | null;
   videoTrack: MediaStreamTrack | null;
-  shareMic: boolean;
-  shareCam: boolean;
 };
 
 export interface MeetingSlice {
@@ -36,6 +37,7 @@ export interface MeetingSlice {
   localMedia: LocalMedia;
   setMeetingData: (modal: Partial<MeetingSlice>) => void;
   setLocalMediaData: (data: LocalMedia) => void;
+  localPeer: LocalPeer;
 }
 
 const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
@@ -48,8 +50,6 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
     mediaStream: null,
     audioTrack: null,
     videoTrack: null,
-    shareCam: false,
-    shareMic: false,
   },
   localPeer: {
     shareMic: true,

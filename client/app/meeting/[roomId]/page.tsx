@@ -6,6 +6,7 @@ import Lobby from "../../../components/ui/meeting/Lobby";
 import MeetingBoard from "../../../components/ui/meeting/MeetingBoard";
 import useStore from "@/store/useStore";
 import RoomClient from "@/lib/roomClient";
+import Controls from "@/components/ui/meeting/Controls";
 
 interface PageProps {
   params: {
@@ -26,8 +27,10 @@ const MeetingPage = ({ params }: PageProps) => {
   }
 
   return (
-    <div>
+    <div className="relative h-screen">
       <MeetingBoard roomId={params.roomId} />
+
+      <Controls roomClient={roomClient} roomId={params.roomId} />
     </div>
   );
 };

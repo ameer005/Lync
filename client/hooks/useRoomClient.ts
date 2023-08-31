@@ -25,8 +25,6 @@ const useRoomClient = ({ roomClient, roomId }: ComponentProps) => {
         localMedia: {
           audioTrack: null,
           mediaStream: null,
-          shareCam: false,
-          shareMic: false,
           videoTrack: null,
         },
       });

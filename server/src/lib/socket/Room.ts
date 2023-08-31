@@ -158,6 +158,7 @@ class Room {
         })}`
       );
 
+      // TODO maybe delete consumer from user's array too
       this.broadCast(SocketEvents.CONSUMER_CLOSED, consumer.id);
     });
 

@@ -19,7 +19,7 @@ const VideoControlBtn = ({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full flex justify-center items-center h-10 w-10 ${twMerge(
+      className={`rounded-full ut-animation py-2 px-2 flex justify-center items-center  ${twMerge(
         className
       )} `}
     >

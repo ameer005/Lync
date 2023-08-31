@@ -26,6 +26,7 @@ const Lobby = ({ roomId, roomClient }: ComponentProps) => {
   const router = useRouter();
   const localMedia = useStore((state) => state.localMedia);
   const setMeetingData = useStore((state) => state.setMeetingData);
+  const localPeer = useStore((state) => state.localPeer);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
@@ -49,6 +50,7 @@ const Lobby = ({ roomId, roomClient }: ComponentProps) => {
         id: user?._id || nanoid(),
       };
 
+      setMeetingData({ me: { id: payload.id } });
       await roomClient.joinRoom(payload);
       setMeetingData({ isJoinedRoom: true });
     } catch (err) {
@@ -79,26 +81,30 @@ const Lobby = ({ roomId, roomClient }: ComponentProps) => {
                 <div className="absolute left-[50%] flex items-center gap-3 -translate-x-[50%] bottom-3">
                   <VideoControlBtn
                     className={`h-14 w-14 sm:h-10 sm:w-10 text-lg border-2  ut-animation  ${
-                      localMedia.shareCam
+                      localPeer.shareCam
                         ? "border-zinc-500 hover:bg-colorText/20 "
                         : "bg-red-500 border-transparent"
                     }`}
                     falseLogo={<BiVideoOff />}
-                    state={localMedia.shareCam}
+                    state={localPeer.shareCam}
                     trueLogo={<BiVideo />}
-                    onClick={() => {}}
+                    onClick={() => {
+                      roomClient.toggleLocalStreamControls("video");
+                    }}
                   />
 
                   <VideoControlBtn
                     className={`h-14 w-14 sm:h-10 sm:w-10 text-lg border-2  ut-animation  ${
-                      localMedia.shareMic
+                      localPeer.shareMic
                         ? "border-zinc-500 hover:bg-colorText/20 "
                         : "bg-red-500 border-transparent"
                     }`}
                     falseLogo={<BiMicrophoneOff />}
-                    state={localMedia.shareMic}
+                    state={localPeer.shareMic}
                     trueLogo={<BiMicrophone />}
-                    onClick={() => {}}
+                    onClick={() => {
+                      roomClient.toggleLocalStreamControls("audio");
+                    }}
                   />
                 </div>
               </>

@@ -22,7 +22,7 @@ class RoomClient {
   consumerTransport: Transport<AppData> | null = null;
   producers: Map<string, Producer<AppData>> = new Map();
   consumers: Map<string, ConsumerData> = new Map();
-  // remoteProducersIds: Map<string, null> = new Map();
+  remoteProducersIds: Map<string, null> = new Map();
 
   constructor(roomId: string) {
     this.roomId = roomId;
@@ -43,32 +43,51 @@ class RoomClient {
   async joinRoom(payload: { name: string; id: string }) {
     await this.loadDevice(payload);
     await this.initTransports();
-    await this.produce();
+    await this.produce("video");
+    await this.produce("audio");
   }
 
-  async produce() {
+  async produce(type: "audio" | "video" | "screen") {
     const { localMedia } = useStore.getState();
-    const params: ProducerOptions = {
-      track: localMedia.videoTrack!,
-      encodings: [
-        {
-          rid: "r0",
-          maxBitrate: 100000,
-          scalabilityMode: "S1T3",
+    let params: ProducerOptions;
+
+    if (type === "video") {
+      params = {
+        track: localMedia.videoTrack!,
+        encodings: [
+          {
+            rid: "r0",
+            maxBitrate: 100000,
+            scalabilityMode: "S1T3",
+          },
+          {
+            rid: "r1",
+            maxBitrate: 300000,
+            scalabilityMode: "S1T3",
+          },
+          {
+            rid: "r2",
+            maxBitrate: 900000,
+            scalabilityMode: "S1T3",
+          },
+        ],
+        codecOptions: { videoGoogleStartBitrate: 1000 },
+        appData: {
+          related: "video",
         },
-        {
-          rid: "r1",
-          maxBitrate: 300000,
-          scalabilityMode: "S1T3",
+      };
+    } else if (type === "audio") {
+      params = {
+        track: localMedia.audioTrack!,
+        appData: {
+          related: "video",
         },
-        {
-          rid: "r2",
-          maxBitrate: 900000,
-          scalabilityMode: "S1T3",
-        },
-      ],
-      codecOptions: { videoGoogleStartBitrate: 1000 },
-    };
+      };
+    } else {
+      params = {
+        track: localMedia.audioTrack!,
+      };
+    }
 
     if (!this.producerTransport) {
       return;
@@ -112,6 +131,10 @@ class RoomClient {
     }
 
     producers.forEach(async (producerId) => {
+      if (this.remoteProducersIds.has(producerId)) {
+        return;
+      }
+      this.remoteProducersIds.set(producerId, null);
       try {
         const { rtpCapabilities } = this.mediasoupDevice;
 
@@ -188,8 +211,6 @@ class RoomClient {
           audioTrack,
           mediaStream,
           videoTrack,
-          shareCam: true,
-          shareMic: true,
         },
       });
     } catch (error: any) {
@@ -419,6 +440,22 @@ class RoomClient {
 
     this.consumers.delete(consumerId);
   }
+
+  toggleLocalStreamControls = (statement: "audio" | "video") => {
+    const { localPeer, localMedia } = useStore.getState();
+
+    if (statement === "video") {
+      this.setState({
+        localPeer: { ...localPeer, shareCam: !localPeer.shareCam },
+      });
+      localMedia.videoTrack!.enabled = !localPeer.shareCam;
+    } else {
+      this.setState({
+        localPeer: { ...localPeer, shareMic: !localPeer.shareMic },
+      });
+      localMedia.audioTrack!.enabled = !localPeer.shareMic;
+    }
+  };
 }
 
 export default RoomClient;
