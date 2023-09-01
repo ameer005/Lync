@@ -18,15 +18,15 @@ const RenderVideo = ({ stream, user }: ComponentProps) => {
   }, []);
 
   return (
-    <div className="h-[15rem] w-[20rem]   relative">
+    <div className="h-full w-full relative ">
       <video
         muted={me.id === user.id}
         autoPlay
-        className="absolute inset-0 object-cover"
+        className="absolute  h-full w-full inset-0 object-cover"
         ref={videoRef}
       ></video>
 
-      <div className="bg-black font-bold p-4 absolute top-[50%] left-[50%]">
+      <div className="bg-black font-bold p-4  absolute top-[50%] left-[50%]">
         {user.name}
       </div>
     </div>

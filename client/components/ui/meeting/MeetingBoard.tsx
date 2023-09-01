@@ -9,14 +9,13 @@ interface ComponentProps {
 }
 
 const MeetingBoard = ({ roomId }: ComponentProps) => {
-  const socket = useStore((state) => state.socket);
   const peers = useStore((state) => state.peers);
 
   // cleanup function
 
   return (
-    <div>
-      <PeerList1 list={peers} className="flex gap-2" />
+    <div className="h-full">
+      <PeerList1 list={peers} className="flex gap-2 h-full w-full" />
     </div>
   );
 };

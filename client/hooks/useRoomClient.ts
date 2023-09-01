@@ -10,6 +10,7 @@ interface ComponentProps {
 
 const useRoomClient = ({ roomClient, roomId }: ComponentProps) => {
   const localMedia = useStore((state) => state.localMedia);
+  const localMediaScreen = useStore((state) => state.localMediaScreen);
   const socket = useStore((state) => state.socket);
   const peers = useStore((state) => state.peers);
   const setMeetingData = useStore((state) => state.setMeetingData);
@@ -39,9 +40,19 @@ const useRoomClient = ({ roomClient, roomId }: ComponentProps) => {
 
   useEffect(() => {
     return () => {
-      cleanupLocalMedia();
+      if (localMedia.mediaStream) {
+        roomClient.cleanLocalMedia("video");
+      }
     };
   }, [localMedia]);
+
+  useEffect(() => {
+    return () => {
+      if (localMediaScreen.mediaStream) {
+        roomClient.cleanLocalMedia("screen");
+      }
+    };
+  }, [localMediaScreen]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent): void => {
@@ -54,14 +65,6 @@ const useRoomClient = ({ roomClient, roomId }: ComponentProps) => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
-
-  const cleanupLocalMedia = () => {
-    if (localMedia.mediaStream) {
-      localMedia.mediaStream.getTracks().forEach((track) => {
-        track.stop();
-      });
-    }
-  };
 
   return null;
 };

@@ -39,7 +39,7 @@ const PeerCard = ({ data }: ComponentProps) => {
   //   return mediaStreams;
   // };
 
-  return <div className="flex gap-2">{renderList()}</div>;
+  return <div className="flex gap-2 h-full w-full ">{renderList()}</div>;
 };
 
 export default PeerCard;

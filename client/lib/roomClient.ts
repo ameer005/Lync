@@ -24,6 +24,8 @@ class RoomClient {
   consumers: Map<string, ConsumerData> = new Map();
   remoteProducersIds: Map<string, null> = new Map();
 
+  sharingScreen: boolean = false;
+
   constructor(roomId: string) {
     this.roomId = roomId;
 
@@ -47,8 +49,8 @@ class RoomClient {
     await this.produce("audio");
   }
 
-  async produce(type: "audio" | "video" | "screen") {
-    const { localMedia } = useStore.getState();
+  async produce(type: "audio" | "video" | "screen-audio" | "screen-video") {
+    const { localMedia, localMediaScreen } = useStore.getState();
     let params: ProducerOptions;
 
     if (type === "video") {
@@ -72,20 +74,18 @@ class RoomClient {
           },
         ],
         codecOptions: { videoGoogleStartBitrate: 1000 },
-        appData: {
-          related: "video",
-        },
       };
     } else if (type === "audio") {
       params = {
         track: localMedia.audioTrack!,
-        appData: {
-          related: "video",
-        },
+      };
+    } else if (type === "screen-video") {
+      params = {
+        track: localMediaScreen.videoTrack!,
       };
     } else {
       params = {
-        track: localMedia.audioTrack!,
+        track: localMediaScreen.audioTrack!,
       };
     }
 
@@ -456,6 +456,58 @@ class RoomClient {
       localMedia.audioTrack!.enabled = !localPeer.shareMic;
     }
   };
+
+  async shareScreen() {
+    try {
+      this.sharingScreen = true;
+      const mediaStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true, // Capture video
+        audio: true, // Capture audio
+      });
+
+      const audioTrack = mediaStream.getAudioTracks()[0];
+      const videoTrack = mediaStream.getVideoTracks()[0];
+
+      // await videoTrack.applyConstraints({
+      //   width: { min: 640, max: 1920, ideal: 1920 },
+      //   height: { min: 400, max: 1080, ideal: 1080 },
+      // });
+
+      this.setState({
+        localMediaScreen: { audioTrack, videoTrack, mediaStream },
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // TODO FIX CLOSING OF SCREEN
+  cleanLocalMedia(type: "video" | "screen") {
+    if (type === "video") {
+      const { localMedia } = useStore.getState();
+      if (localMedia.mediaStream) {
+        localMedia.mediaStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+    } else {
+      this.sharingScreen = false;
+      const { localMediaScreen } = useStore.getState();
+      if (localMediaScreen.mediaStream) {
+        localMediaScreen.mediaStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+
+      this.setState({
+        localMediaScreen: {
+          mediaStream: null,
+          audioTrack: null,
+          videoTrack: null,
+        },
+      });
+    }
+  }
 }
 
 export default RoomClient;

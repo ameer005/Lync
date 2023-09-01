@@ -44,12 +44,19 @@ const Controls = ({ roomClient, roomId }: ComponentProps) => {
       />
 
       <VideoControlBtn
-        className={`text-2xl ${localPeer.shareCam ? "" : ""}`}
+        className={`text-2xl ${roomClient.sharingScreen ? "bg-zinc-400" : ""}`}
         falseLogo={<BiMicrophoneOff />}
         state={true}
         trueLogo={<MdOutlineScreenShare />}
-        onClick={() => {
-          // roomClient.toggleLocalStreamControls("audio");
+        onClick={async () => {
+          if (roomClient.sharingScreen) {
+            roomClient.cleanLocalMedia("screen");
+          } else {
+            await roomClient.shareScreen();
+            await roomClient.produce("screen-video");
+          }
+
+          // await roomClient.produce("screen-audio");
         }}
       />
 

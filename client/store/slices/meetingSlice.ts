@@ -35,6 +35,7 @@ export interface MeetingSlice {
   peers: Map<string, Peer>;
   isJoinedRoom: boolean;
   localMedia: LocalMedia;
+  localMediaScreen: LocalMedia;
   setMeetingData: (modal: Partial<MeetingSlice>) => void;
   setLocalMediaData: (data: LocalMedia) => void;
   localPeer: LocalPeer;
@@ -47,6 +48,11 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
   peers: new Map(),
   isJoinedRoom: false,
   localMedia: {
+    mediaStream: null,
+    audioTrack: null,
+    videoTrack: null,
+  },
+  localMediaScreen: {
     mediaStream: null,
     audioTrack: null,
     videoTrack: null,
