@@ -15,4 +15,5 @@ type SocketEvents =
   | "get-producers"
   | "resume-consumer"
   | "producer-closed"
-  | "new-producer";
+  | "new-producer"
+  | "toggle-media-controls";

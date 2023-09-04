@@ -23,7 +23,6 @@ class RoomClient {
   producers: Map<string, Producer<AppData>> = new Map();
   consumers: Map<string, ConsumerData> = new Map();
   remoteProducersIds: Map<string, null> = new Map();
-
   sharingScreen: boolean = false;
 
   constructor(roomId: string) {
@@ -389,8 +388,19 @@ class RoomClient {
     // chedck if peer already exist
     // if it exist then add new comsumer to the consumers array inside peers
     if (peers.has(user.id)) {
-      console.log("RUNNING CONSUMER ALREADY EXIST");
       const updatedPeers = new Map(peers);
+      const existedPeer = updatedPeers.get(user.id);
+      if (existedPeer?.meidaStreams.length === 1 && consumer.kind === "audio") {
+        existedPeer.meidaStreams[0].addTrack(consumer.track);
+      } else if (
+        existedPeer?.meidaStreams.length === 2 &&
+        consumer.kind === "audio"
+      ) {
+        existedPeer.meidaStreams[1].addTrack(consumer.track);
+      } else {
+        existedPeer?.meidaStreams.push(new MediaStream([consumer.track]));
+      }
+
       updatedPeers.get(user.id)?.consumers.push(consumer);
       this.setState({ peers: updatedPeers });
 
@@ -403,6 +413,7 @@ class RoomClient {
         id: user.id,
         socketId: user.socketId,
         consumers: [consumer],
+        meidaStreams: [new MediaStream([consumer.track])],
       };
 
       const updatedPeers = new Map(peers);
@@ -431,6 +442,11 @@ class RoomClient {
 
       peer.consumers = consumers;
 
+      // removing screen sharing
+      if (peer.consumers.length === 2 && peer.meidaStreams.length === 2) {
+        peer.meidaStreams.pop();
+      }
+
       if (!peer?.consumers.length) {
         updatedPeers.delete(peer?.id!);
       }
@@ -442,18 +458,28 @@ class RoomClient {
   }
 
   toggleLocalStreamControls = (statement: "audio" | "video") => {
-    const { localPeer, localMedia } = useStore.getState();
+    const { localPeer, localMedia, me } = useStore.getState();
 
     if (statement === "video") {
       this.setState({
         localPeer: { ...localPeer, shareCam: !localPeer.shareCam },
       });
       localMedia.videoTrack!.enabled = !localPeer.shareCam;
+
+      asyncSocket(this.socket, "toggle-media-controls", this.roomId, {
+        control: "video",
+        state: !localPeer.shareCam,
+      });
     } else {
       this.setState({
         localPeer: { ...localPeer, shareMic: !localPeer.shareMic },
       });
       localMedia.audioTrack!.enabled = !localPeer.shareMic;
+
+      asyncSocket(this.socket, "toggle-media-controls", this.roomId, {
+        control: "audio",
+        state: !localPeer.shareMic,
+      });
     }
   };
 
@@ -467,11 +493,6 @@ class RoomClient {
 
       const audioTrack = mediaStream.getAudioTracks()[0];
       const videoTrack = mediaStream.getVideoTracks()[0];
-
-      // await videoTrack.applyConstraints({
-      //   width: { min: 640, max: 1920, ideal: 1920 },
-      //   height: { min: 400, max: 1080, ideal: 1080 },
-      // });
 
       this.setState({
         localMediaScreen: { audioTrack, videoTrack, mediaStream },

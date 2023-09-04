@@ -5,6 +5,7 @@ export type Peer = {
   socketId: string;
   id: string;
   consumers: Consumer<AppData>[];
+  meidaStreams: MediaStream[];
 };
 
 export type ConsumerData = {

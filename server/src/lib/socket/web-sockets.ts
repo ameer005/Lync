@@ -294,6 +294,34 @@ const webSockets = async (io: IO) => {
       }
     );
 
+    socket.on(
+      SocketEvents.TOGGLE_MEDIA_CONTROLS,
+      (
+        roomId: string,
+        data: { control: "audio" | "video"; state: boolean }
+      ) => {
+        const room = getRoom(roomId);
+        if (!room) return;
+        logger.info("RUNNING toggle media");
+
+        if (data.control === "audio") {
+          io.to(roomId).emit("listen-media-toggle", {
+            socketId: socket.id,
+            control: data.control,
+            state: data.state,
+          });
+        }
+
+        if (data.control === "video") {
+          io.to(roomId).emit("listen-media-toggle", {
+            socketId: socket.id,
+            control: data.control,
+            state: data.state,
+          });
+        }
+      }
+    );
+
     // socket.on("send-message", (roomId, data) => {
     //   io.to(roomId).emit("get-message", data);
     // });

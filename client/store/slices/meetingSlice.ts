@@ -1,12 +1,6 @@
 import { StateCreator } from "zustand";
 import { AppData, Consumer } from "mediasoup-client/lib/types";
-
-export type Peer = {
-  name: string;
-  socketId: string;
-  id: string;
-  consumers: Consumer<AppData>[];
-};
+import { Peer } from "@/types/room-types";
 
 type LocalPeer = {
   shareMic: boolean;

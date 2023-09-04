@@ -36,4 +36,6 @@ export enum SocketEvents {
   RESUME_CONSUMER = "resume-consumer",
   GET_PRODUCERS = "get-producers",
   PRODUCER_CLOSED = "producer-closed",
+  TOGGLE_MEDIA_CONTROLS = "toggle-media-controls",
+  LISTEN_MEDIA_TOGGLE = "listen-media-toggle",
 }

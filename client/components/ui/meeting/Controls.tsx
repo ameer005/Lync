@@ -11,6 +11,7 @@ import {
 
 import { MdOutlineScreenShare, MdOutlineCallEnd } from "react-icons/md";
 import VideoControlBtn from "../buttons/VideoControlBtn";
+import { useEffect } from "react";
 
 interface ComponentProps {
   roomId: string;
@@ -22,7 +23,7 @@ const Controls = ({ roomClient, roomId }: ComponentProps) => {
   const router = useRouter();
 
   return (
-    <div className="absolute px-4 py-2 rounded-md flex gap-3 items-center bottom-4 left-[50%] -translate-x-[50%]  bg-black">
+    <div className="absolute px-6 py-2 rounded-md flex gap-3 items-center bottom-8 left-[50%] -translate-x-[50%] shadow-lg shadow-colorDark2 bg-colorDark2">
       <VideoControlBtn
         className={`text-2xl ${localPeer.shareCam ? "" : ""}`}
         falseLogo={<BiVideoOff />}

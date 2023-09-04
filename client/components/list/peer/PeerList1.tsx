@@ -1,23 +1,49 @@
 "use client";
 
-import { Peer } from "@/store/slices/meetingSlice";
+import { Peer } from "@/types/room-types";
 import PeerCard from "./PeerCard";
+import { useEffect, useState } from "react";
 
 interface ComponentProps {
   list: Map<string, Peer>;
   className: string;
 }
 
+export type UserData = {
+  user: { name: string; id: string; socketId: string };
+  mediaStream: MediaStream;
+};
+
 const PeerList1 = ({ list, className }: ComponentProps) => {
-  const renderList = () => {
-    const cards = [];
+  const [userStreams, setUserStreams] = useState<UserData[]>([]);
+
+  useEffect(() => {
+    buildMediaStreams();
+  }, [list]);
+
+  const buildMediaStreams = () => {
+    let userStreams: UserData[] = [];
     for (let value of list.values()) {
-      cards.push(<PeerCard key={value.id} data={value} />);
+      value.meidaStreams.forEach((stream) => {
+        userStreams.push({
+          mediaStream: stream,
+          user: { id: value.id, socketId: value.socketId, name: value.name },
+        });
+      });
     }
 
-    return cards;
+    setUserStreams(userStreams);
   };
-  return <div className={className}>{renderList()}</div>;
+
+  const renderList = () => {
+    return userStreams.map((data) => {
+      return <PeerCard data={data} key={data.mediaStream.id} />;
+    });
+  };
+
+  return (
+    <div className={`${className} meeting-grid gap-4 `}>{renderList()}</div>
+  );
 };
 
 export default PeerList1;
