@@ -126,3 +126,10 @@ input[type="number"] {
 .peer-card-border {
   box-shadow: 0 0 0 2.3px #4477ce;
 }
+
+@media (max-width: 31.25em) {
+  .meeting-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+}

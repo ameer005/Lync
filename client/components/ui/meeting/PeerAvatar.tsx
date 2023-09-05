@@ -1,5 +1,3 @@
-import useStore from "@/store/useStore";
-
 interface AvatarProps {
   className?: string;
   username: string;

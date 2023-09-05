@@ -1,6 +1,7 @@
 import { StateCreator } from "zustand";
 import { AppData, Consumer } from "mediasoup-client/lib/types";
 import { Peer } from "@/types/room-types";
+import { UserData } from "@/components/list/peer/PeerList1";
 
 type LocalPeer = {
   shareMic: boolean;
@@ -30,6 +31,7 @@ export interface MeetingSlice {
   isJoinedRoom: boolean;
   localMedia: LocalMedia;
   localMediaScreen: LocalMedia;
+  pinnedStream: UserData | null;
   setMeetingData: (modal: Partial<MeetingSlice>) => void;
   setLocalMediaData: (data: LocalMedia) => void;
   localPeer: LocalPeer;
@@ -41,6 +43,7 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
   },
   peers: new Map(),
   isJoinedRoom: false,
+  pinnedStream: null,
   localMedia: {
     mediaStream: null,
     audioTrack: null,

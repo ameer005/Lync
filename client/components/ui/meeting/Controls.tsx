@@ -25,6 +25,7 @@ const Controls = ({ roomClient, roomId }: ComponentProps) => {
   return (
     <div className="absolute px-6 py-2 rounded-md flex gap-3 items-center bottom-8 left-[50%] -translate-x-[50%] shadow-lg shadow-colorDark2 bg-colorDark2">
       <VideoControlBtn
+        tooltip="stop camera"
         className={`text-2xl ${localPeer.shareCam ? "" : ""}`}
         falseLogo={<BiVideoOff />}
         state={localPeer.shareCam}
