@@ -16,7 +16,7 @@ const MeetingBoard = ({ roomId }: ComponentProps) => {
     <div className="h-full p-5 sm:p-2 bg-zinc-950 overflow-y-scroll">
       {pinnedStream ? (
         <div className="h-full w-full">
-          <PeerCard data={pinnedStream} />{" "}
+          <PeerCard data={pinnedStream} />
         </div>
       ) : (
         <PeerList1 list={peers} className="flex gap-2 h-full w-full" />

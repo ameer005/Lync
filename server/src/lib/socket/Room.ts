@@ -17,7 +17,7 @@ class Room {
   public roomId: string;
   private io: IO;
   private peers: Map<string, Peer> = new Map();
-  private admin: string;
+  public admin: string;
   private router: Router;
 
   constructor(roomId: string, admin_id: string, io: IO, router: Router) {

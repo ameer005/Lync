@@ -27,6 +27,7 @@ export interface MeetingSlice {
   me: {
     id: string | null;
   };
+  isRoomAdmin: boolean;
   peers: Map<string, Peer>;
   isJoinedRoom: boolean;
   localMedia: LocalMedia;
@@ -41,6 +42,7 @@ const meetingSlice: StateCreator<MeetingSlice> = (set, get) => ({
   me: {
     id: null,
   },
+  isRoomAdmin: false,
   peers: new Map(),
   isJoinedRoom: false,
   pinnedStream: null,

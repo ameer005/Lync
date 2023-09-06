@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import useStore from "@/store/useStore";
 import { UserData } from "./PeerList1";
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +14,7 @@ interface ComponentProps {
 }
 
 const PeerCard = ({ data }: ComponentProps) => {
+  const router = useRouter();
   const me = useStore((state) => state.me);
   const pinnedStream = useStore((state) => state.pinnedStream);
   const setMeetingData = useStore((state) => state.setMeetingData);
@@ -39,7 +41,6 @@ const PeerCard = ({ data }: ComponentProps) => {
       }) => {
         if (res.socketId === data.user.socketId) {
           if (res.control === "video") {
-            console.log("vide: ", res.state);
             setIsVideoMuted(!res.state);
           } else {
             setIsAudioMuted(!res.state);
@@ -47,16 +48,14 @@ const PeerCard = ({ data }: ComponentProps) => {
         }
       }
     );
+
+    socket.on("listen-remove-user", (res) => {
+      router.push("/");
+    });
   }, []);
 
   return (
     <div
-      onMouseEnter={() => {
-        setShowHovercontrols(true);
-      }}
-      onMouseLeave={() => {
-        setShowHovercontrols(false);
-      }}
       onClick={() => {
         setShowHovercontrols((prev) => !prev);
       }}
@@ -85,7 +84,7 @@ const PeerCard = ({ data }: ComponentProps) => {
           onClick={(e) => {
             e.stopPropagation();
           }}
-          className="px-4 bg-colorSecondary2 absolute top-[50%] -translate-x-[50%] -translate-y-[50%] left-[50%]  py-2 rounded-full"
+          className="px-4 bg-colorSecondary2 absolute top-[50%] -translate-x-[50%] -translate-y-[50%] left-[50%]  py-3 rounded-full"
         >
           <div className="flex gap-4 items-center">
             <div>
@@ -99,7 +98,7 @@ const PeerCard = ({ data }: ComponentProps) => {
                 </button>
               )}
             </div>
-            <PeerHoverCtrs />
+            <PeerHoverCtrs user={data.user} />
           </div>
         </div>
       )}

@@ -52,7 +52,9 @@ const webSockets = async (io: IO) => {
 
       addPeerToRoom(roomId, new Peer(socket.id, user.id, user.name));
       socket.join(roomId);
-      cb({ status: CbStatus.SUCCESS, data: "successfull" });
+
+      const room = getRoom(roomId);
+      cb({ status: CbStatus.SUCCESS, data: room?.admin });
     });
 
     // media soup handshake
@@ -321,6 +323,10 @@ const webSockets = async (io: IO) => {
         }
       }
     );
+
+    socket.on(SocketEvents.REMOVE_USER, (socketId: string) => {
+      io.to(socketId).emit(SocketEvents.LISTEN_REMOVE_USER, socketId);
+    });
 
     // socket.on("send-message", (roomId, data) => {
     //   io.to(roomId).emit("get-message", data);

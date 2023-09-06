@@ -1,5 +1,6 @@
 import useStore from "@/store/useStore";
 import * as mediasoup from "mediasoup-client";
+
 import {
   Transport,
   AppData,
@@ -9,24 +10,29 @@ import {
   ProducerOptions,
   ConsumerOptions,
   Consumer,
+  Device,
 } from "mediasoup-client/lib/types";
 import { ConsumerData, Peer, RemoteProducer } from "@/types/room-types";
 import { asyncSocket } from "@/utils/helpers";
 
 class RoomClient {
+  roomAdminId: string | null = null;
   roomId: string;
-  setState = useStore.setState;
-  socket = useStore.getState().socket;
-  mediasoupDevice = new mediasoup.Device();
-  producerTransport: Transport<AppData> | null = null;
-  consumerTransport: Transport<AppData> | null = null;
-  producers: Map<string, Producer<AppData>> = new Map();
-  consumers: Map<string, ConsumerData> = new Map();
-  remoteProducersIds: Map<string, null> = new Map();
-  sharingScreen: boolean = false;
+  private setState = useStore.setState;
+  private socket = useStore.getState().socket;
+  private mediasoupDevice: Device;
+  private producerTransport: Transport<AppData> | null = null;
+  private consumerTransport: Transport<AppData> | null = null;
+  private producers: Map<string, Producer<AppData>> = new Map();
+  private consumers: Map<string, ConsumerData> = new Map();
+  private remoteProducersIds: Map<string, null> = new Map();
+  private sharingScreen: boolean = false;
 
   constructor(roomId: string) {
     this.roomId = roomId;
+    this.mediasoupDevice = new mediasoup.Device({
+      handlerName: mediasoup.detectDevice(),
+    });
 
     this.listenSocketEvents();
   }
@@ -42,7 +48,18 @@ class RoomClient {
   }
 
   async joinRoom(payload: { name: string; id: string }) {
-    await this.loadDevice(payload);
+    this.roomAdminId = await asyncSocket<any>(
+      this.socket,
+      "join-room",
+      this.roomId,
+      payload
+    );
+
+    if (payload.id === this.roomAdminId) {
+      this.setState({ isRoomAdmin: true });
+    }
+
+    await this.loadDevice();
     await this.initTransports();
     await this.produce("video");
     await this.produce("audio");
@@ -181,8 +198,7 @@ class RoomClient {
   }
 
   // helpers
-  async loadDevice(payload: { name: string; id: string }) {
-    await asyncSocket<any>(this.socket, "join-room", this.roomId, payload);
+  async loadDevice() {
     const rtpCapabilities = await asyncSocket<RtpCapabilities>(
       this.socket,
       "get-router-rtp-capabilities",
@@ -273,6 +289,7 @@ class RoomClient {
 
           callback();
         } catch (err: any) {
+          console.error(err);
           errback(err);
         }
       }
@@ -306,6 +323,7 @@ class RoomClient {
             })
           );
         } catch (err: any) {
+          console.error(err);
           errorback(err);
         }
       }

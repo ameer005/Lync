@@ -38,4 +38,6 @@ export enum SocketEvents {
   PRODUCER_CLOSED = "producer-closed",
   TOGGLE_MEDIA_CONTROLS = "toggle-media-controls",
   LISTEN_MEDIA_TOGGLE = "listen-media-toggle",
+  REMOVE_USER = "remove-user",
+  LISTEN_REMOVE_USER = "listen-remove-user",
 }
