@@ -32,7 +32,7 @@ export default function RootLayout({
           <div id="modal-auth"></div>
 
           <ToastNotification />
-          <Notification />
+          {/* <Notification /> */}
         </Providers>
       </body>
     </html>
