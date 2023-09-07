@@ -72,7 +72,7 @@ export const config = {
     webRtcTransportOptions: {
       listenIps: [
         {
-          ip: "0.0.0.0", //process.env.MEDIASOUP_LISTEN_IP ||
+          ip: process.env.MEDIASOUP_LISTEN_IP || "0.0.0.0", //process.env.MEDIASOUP_LISTEN_IP ||
           announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP || "127.0.0.1",
         },
       ] as TransportListenIp[],

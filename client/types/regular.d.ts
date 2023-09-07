@@ -17,3 +17,8 @@ type SocketEvents =
   | "producer-closed"
   | "new-producer"
   | "toggle-media-controls";
+
+declare module "*.mp3" {
+  const src: string;
+  export default src;
+}

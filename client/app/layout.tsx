@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import Global from "@/components/modals/Global";
 import Providers from "@/utils/provider";
+import ToastNotification from "@/components/ui/Toast";
+import Notification from "@/components/ui/Notification";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -28,6 +30,9 @@ export default function RootLayout({
 
           <Global />
           <div id="modal-auth"></div>
+
+          <ToastNotification />
+          <Notification />
         </Providers>
       </body>
     </html>

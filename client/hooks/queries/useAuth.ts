@@ -17,23 +17,25 @@ export const useSignup = () => {
 
   return useMutation(queryFnc, {
     onSuccess: () => {
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     type: "success",
-      //     message: "Otp has been sent to your registered email.",
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          type: "success",
+          message: "Otp has been sent to your registered email.",
+          title: "",
+        },
+      });
       setOptions({ authScreen: "Verify" });
     },
     onError: (error: any) => {
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     type: "error",
-      //     message: error.response.data.message,
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          type: "error",
+          message: error.response.data.message,
+          title: "",
+        },
+      });
     },
   });
 };
@@ -50,23 +52,25 @@ export const useActivateAccount = () => {
 
   return useMutation(queryFnc, {
     onSuccess: () => {
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     type: "",
-      //     message: "Account activated successfully",
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          type: "success",
+          message: "Account activated successfully",
+          title: "",
+        },
+      });
       setOptions({ authScreen: "Login" });
     },
     onError: (error: any) => {
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     type: "error",
-      //     message: error.response.data.message,
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          type: "error",
+          message: error.response.data.message,
+          title: "",
+        },
+      });
     },
   });
 };
@@ -81,22 +85,24 @@ export const useResendActivatonCode = () => {
 
   return useMutation(resendActivationCode, {
     onSuccess: () => {
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     message: "check your registered email for activation code",
-      //     type: "",
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          message: "check your registered email for activation code",
+          type: "success",
+          title: "",
+        },
+      });
     },
     onError: (error: any) => {
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     message: error.response.data.message,
-      //     type: "error",
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          message: error.response.data.message,
+          type: "error",
+          title: "",
+        },
+      });
     },
   });
 };
@@ -120,13 +126,14 @@ export const useLogin = () => {
       if (error.response.status === 403) {
         setOptions({ authScreen: "Verify" });
       }
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     message: error.response.data.message,
-      //     type: "error",
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          message: error.response.data.message,
+          type: "error",
+          title: "",
+        },
+      });
     },
     onSuccess: (data) => {
       localStorage.setItem("user", JSON.stringify(data.user));
@@ -168,13 +175,14 @@ export const useForgotPassword = () => {
   return useMutation(forgotPassword, {
     onSuccess: () => {
       setOptions({ authScreen: "Validate Forgot" });
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     message: "Otp has been sent to your email",
-      //     type: "",
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          message: "Otp has been sent to your email",
+          type: "success",
+          title: "",
+        },
+      });
     },
   });
 };
@@ -195,22 +203,24 @@ export const useValidateForgotPassword = () => {
   return useMutation(validateForgotPassword, {
     onSuccess: () => {
       setOptions({ authScreen: "Login" });
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     message: "passwrod changed successfully",
-      //     type: "",
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          message: "passwrod changed successfully",
+          type: "success",
+          title: "",
+        },
+      });
     },
     onError: (error: any) => {
-      // setModalState({
-      //   showToastModal: true,
-      //   toastProperties: {
-      //     message: error.response.data.message,
-      //     type: "error",
-      //   },
-      // });
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          message: error.response.data.message,
+          type: "error",
+          title: "",
+        },
+      });
     },
   });
 };

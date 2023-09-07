@@ -13,6 +13,7 @@ import {
   BiMicrophoneOff,
 } from "react-icons/bi";
 import RoomClient from "@/lib/roomClient";
+import { asyncSocket } from "@/utils/helpers";
 
 interface ComponentProps {
   roomId: string;
@@ -26,6 +27,7 @@ const Lobby = ({ roomId, roomClient }: ComponentProps) => {
   const router = useRouter();
   const localMedia = useStore((state) => state.localMedia);
   const setMeetingData = useStore((state) => state.setMeetingData);
+  const setModalState = useStore((state) => state.setModalState);
   const localPeer = useStore((state) => state.localPeer);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -54,10 +56,15 @@ const Lobby = ({ roomId, roomClient }: ComponentProps) => {
       await roomClient.joinRoom(payload);
       setMeetingData({ isJoinedRoom: true });
     } catch (err) {
-      // TODO
-      // implement toas notification
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          message: "Please provide valid meeting link",
+          title: "Room doesn't exist",
+          type: "error",
+        },
+      });
       router.push("/");
-      console.log("room doesn't exist");
     }
   };
 

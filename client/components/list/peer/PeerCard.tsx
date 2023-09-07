@@ -18,6 +18,7 @@ const PeerCard = ({ data }: ComponentProps) => {
   const me = useStore((state) => state.me);
   const pinnedStream = useStore((state) => state.pinnedStream);
   const setMeetingData = useStore((state) => state.setMeetingData);
+  const setModalState = useStore((state) => state.setModalState);
   const socket = useStore((state) => state.socket);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   // TODO set initial state with socket
@@ -50,6 +51,14 @@ const PeerCard = ({ data }: ComponentProps) => {
     );
 
     socket.on("listen-remove-user", (res) => {
+      setModalState({
+        showToastModal: true,
+        toastProperties: {
+          title: "",
+          message: "You've been kicked out of the meeting",
+          type: "info",
+        },
+      });
       router.push("/");
     });
   }, []);
@@ -63,12 +72,25 @@ const PeerCard = ({ data }: ComponentProps) => {
         me.id === data.user.id && "peer-card-border"
       }`}
     >
-      <video
-        muted={me.id === data.user.id}
-        autoPlay
-        className="absolute  h-full w-full inset-0 object-cover"
-        ref={videoRef}
-      ></video>
+      {pinnedStream?.isScreen ? (
+        <div className="w-full h-full flex items-center bg-colorBg">
+          <div className="w-full responsive-video-container ">
+            <video
+              muted={me.id === data.user.id}
+              autoPlay
+              className="responsive-video"
+              ref={videoRef}
+            ></video>
+          </div>
+        </div>
+      ) : (
+        <video
+          muted={me.id === data.user.id}
+          autoPlay
+          className="absolute h-full w-full inset-0 object-cover"
+          ref={videoRef}
+        ></video>
+      )}
 
       {isVideoMuted && (
         <div className="absolute h-full w-full inset-0 flex items-center justify-center bg-colorDark1">
@@ -103,7 +125,7 @@ const PeerCard = ({ data }: ComponentProps) => {
         </div>
       )}
 
-      <div className="bg-colorSecondary2 flex items-center gap-2 font-medium py-2 px-4 rounded-md text-xs shadow-colorDark2 shadow-md  absolute bottom-2 left-4">
+      <div className="bg-colorSecondary2 flex items-center gap-2 font-medium py-2 px-4 rounded-md text-xs shadow-colorDark2 shadow-md  absolute top-2 left-4">
         {isAudioMuted ? (
           <BiMicrophoneOff className="h-4 w-4" />
         ) : (

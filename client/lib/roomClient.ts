@@ -26,7 +26,8 @@ class RoomClient {
   private producers: Map<string, Producer<AppData>> = new Map();
   private consumers: Map<string, ConsumerData> = new Map();
   private remoteProducersIds: Map<string, null> = new Map();
-  private sharingScreen: boolean = false;
+  public sharingScreen: boolean = false;
+  private localScreenProducersId: string[] = [];
 
   constructor(roomId: string) {
     this.roomId = roomId;
@@ -66,76 +67,84 @@ class RoomClient {
   }
 
   async produce(type: "audio" | "video" | "screen-audio" | "screen-video") {
-    const { localMedia, localMediaScreen } = useStore.getState();
-    let params: ProducerOptions;
+    try {
+      const { localMedia, localMediaScreen } = useStore.getState();
+      let params: ProducerOptions;
 
-    if (type === "video") {
-      params = {
-        track: localMedia.videoTrack!,
-        encodings: [
-          {
-            rid: "r0",
-            maxBitrate: 100000,
-            scalabilityMode: "S1T3",
-          },
-          {
-            rid: "r1",
-            maxBitrate: 300000,
-            scalabilityMode: "S1T3",
-          },
-          {
-            rid: "r2",
-            maxBitrate: 900000,
-            scalabilityMode: "S1T3",
-          },
-        ],
-        codecOptions: { videoGoogleStartBitrate: 1000 },
-      };
-    } else if (type === "audio") {
-      params = {
-        track: localMedia.audioTrack!,
-      };
-    } else if (type === "screen-video") {
-      params = {
-        track: localMediaScreen.videoTrack!,
-      };
-    } else {
-      params = {
-        track: localMediaScreen.audioTrack!,
-      };
-    }
+      if (type === "video") {
+        params = {
+          track: localMedia.videoTrack!,
+          encodings: [
+            {
+              rid: "r0",
+              maxBitrate: 100000,
+              scalabilityMode: "S1T3",
+            },
+            {
+              rid: "r1",
+              maxBitrate: 300000,
+              scalabilityMode: "S1T3",
+            },
+            {
+              rid: "r2",
+              maxBitrate: 900000,
+              scalabilityMode: "S1T3",
+            },
+          ],
+          codecOptions: { videoGoogleStartBitrate: 1000 },
+        };
+      } else if (type === "audio") {
+        params = {
+          track: localMedia.audioTrack!,
+        };
+      } else if (type === "screen-video") {
+        params = {
+          track: localMediaScreen.videoTrack!,
+        };
+      } else {
+        params = {
+          track: localMediaScreen.audioTrack!,
+        };
+      }
 
-    if (!this.producerTransport) {
-      return;
-    }
+      if (!this.producerTransport) {
+        return;
+      }
 
-    const producer = await this.producerTransport.produce(params);
+      const producer = await this.producerTransport.produce(params);
 
-    this.producers.set(producer.id, producer);
+      if (type === "screen-video" || type === "screen-audio") {
+        this.localScreenProducersId.push(producer.id);
+      }
 
-    producer.on("trackended", () => {
-      console.log("track ended");
-      this.closeProducer(producer.id);
-    });
+      this.producers.set(producer.id, producer);
 
-    producer.on("transportclose", () => {
-      console.log("producer transport close");
-      localMedia.mediaStream?.getTracks().forEach((track) => {
-        track.stop();
+      producer.on("trackended", () => {
+        console.log("track ended");
+        this.closeProducer(producer.id);
       });
 
-      this.producers.delete(producer.id);
-    });
+      producer.on("transportclose", () => {
+        console.log("producer transport close");
+        localMedia.mediaStream?.getTracks().forEach((track) => {
+          track.stop();
+        });
 
-    producer.on("@close", () => {
-      console.log("producer transport close");
-      localMedia.mediaStream?.getTracks().forEach((track) => {
-        track.stop();
+        this.producers.delete(producer.id);
       });
 
-      this.closeProducer(producer.id);
-      this.producers.delete(producer.id);
-    });
+      producer.on("@close", () => {
+        console.log("producer transport close");
+        localMedia.mediaStream?.getTracks().forEach((track) => {
+          track.stop();
+        });
+
+        this.closeProducer(producer.id);
+        this.producers.delete(producer.id);
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async consume({ remoteProducer }: { remoteProducer: RemoteProducer }) {
@@ -367,6 +376,7 @@ class RoomClient {
           console.log(message);
           callback();
         } catch (err: any) {
+          console.error(err);
           errback(err);
         }
       }
@@ -426,6 +436,7 @@ class RoomClient {
       return;
     } else {
       // if not create new peer
+
       const newPeer: Peer = {
         name: user.name,
         id: user.id,
@@ -537,6 +548,12 @@ class RoomClient {
           track.stop();
         });
       }
+
+      this.localScreenProducersId.forEach((prod) => {
+        this.closeProducer(prod);
+      });
+
+      this.localScreenProducersId = [];
 
       this.setState({
         localMediaScreen: {

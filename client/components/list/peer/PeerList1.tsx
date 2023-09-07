@@ -12,6 +12,7 @@ interface ComponentProps {
 export type UserData = {
   user: { name: string; id: string; socketId: string };
   mediaStream: MediaStream;
+  isScreen: boolean;
 };
 
 const PeerList1 = ({ list, className }: ComponentProps) => {
@@ -24,10 +25,15 @@ const PeerList1 = ({ list, className }: ComponentProps) => {
   const buildMediaStreams = () => {
     let userStreams: UserData[] = [];
     for (let value of list.values()) {
-      value.meidaStreams.forEach((stream) => {
+      value.meidaStreams.forEach((stream, i) => {
+        let isScreen = false;
+        if (i === 1) {
+          isScreen = true;
+        }
         userStreams.push({
           mediaStream: stream,
           user: { id: value.id, socketId: value.socketId, name: value.name },
+          isScreen: isScreen,
         });
       });
     }

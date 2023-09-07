@@ -58,7 +58,14 @@ const RoomMenu = () => {
                 await asyncSocket<any>(socket, "get-room", roomInput);
                 router.push(`/meeting/${roomInput}`);
               } catch (err) {
-                // TODO implement toast error
+                setModalState({
+                  showToastModal: true,
+                  toastProperties: {
+                    message: "Please provide valid meeting ID",
+                    title: "Room doesn't exist",
+                    type: "error",
+                  },
+                });
                 console.log(err);
               }
             }}

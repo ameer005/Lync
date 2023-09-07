@@ -11,7 +11,6 @@ import {
 
 import { MdOutlineScreenShare, MdOutlineCallEnd } from "react-icons/md";
 import VideoControlBtn from "../buttons/VideoControlBtn";
-import { useEffect } from "react";
 
 interface ComponentProps {
   roomId: string;
@@ -56,9 +55,8 @@ const Controls = ({ roomClient, roomId }: ComponentProps) => {
           } else {
             await roomClient.shareScreen();
             await roomClient.produce("screen-video");
+            // await roomClient.produce("screen-audio");
           }
-
-          // await roomClient.produce("screen-audio");
         }}
       />
 

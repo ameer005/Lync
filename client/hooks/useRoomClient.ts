@@ -32,11 +32,11 @@ const useRoomClient = ({ roomClient, roomId }: ComponentProps) => {
     };
   }, []);
 
-  useEffect(() => {
-    if (peers) {
-      console.log("peers: ", peers);
-    }
-  }, [peers]);
+  // useEffect(() => {
+  //   if (peers) {
+  //     console.log("peers: ", peers);
+  //   }
+  // }, [peers]);
 
   useEffect(() => {
     return () => {
