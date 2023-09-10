@@ -11,7 +11,11 @@ import { config } from "../../global/config";
 import logger from "../logger";
 import { SocketEvents } from "../../types/socket-types";
 
-type BroadcastEvent = "new-producer" | "consumer-closed";
+type BroadcastEvent = "new-producer" | "consumer-closed" | "get-message";
+export type Message = {
+  user: { name: string; socketId: string; id: string };
+  text: string;
+};
 
 class Room {
   public roomId: string;
@@ -19,6 +23,7 @@ class Room {
   private peers: Map<string, Peer> = new Map();
   public admin: string;
   private router: Router;
+  private chat: Message[] = [];
 
   constructor(roomId: string, admin_id: string, io: IO, router: Router) {
     this.roomId = roomId;
@@ -191,6 +196,12 @@ class Room {
 
   isPeerInRoom(socketId: string) {
     return this.peers.has(socketId);
+  }
+
+  addMessage(message: Message) {
+    this.chat.push(message);
+
+    this.broadCast("get-message", { data: this.chat });
   }
 
   toJson() {

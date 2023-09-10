@@ -1,6 +1,6 @@
 "use client";
 
-import { Peer } from "@/types/room-types";
+import { Peer, User } from "@/types/room-types";
 import PeerCard from "./PeerCard";
 import { useEffect, useState } from "react";
 
@@ -10,7 +10,7 @@ interface ComponentProps {
 }
 
 export type UserData = {
-  user: { name: string; id: string; socketId: string };
+  user: User;
   mediaStream: MediaStream;
   isScreen: boolean;
 };

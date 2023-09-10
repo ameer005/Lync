@@ -2,10 +2,12 @@
 import { nanoid } from "nanoid";
 import useStore from "@/store/useStore";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BiSolidVideoPlus } from "react-icons/bi";
 import { BsKeyboardFill } from "react-icons/bs";
 import { asyncSocket } from "@/utils/helpers";
+import { useCheckAuth } from "@/hooks/queries/useAuth";
+import LoadingCircle from "./LoadingSpinners/LoadingCircle";
 
 const RoomMenu = () => {
   const [roomInput, setRoomInput] = useState<string>("");
@@ -14,30 +16,50 @@ const RoomMenu = () => {
   const user = useStore((state) => state.user);
   const router = useRouter();
   const setModalState = useStore((state) => state.setModalState);
+  const { mutate, isSuccess } = useCheckAuth();
+
+  useEffect(() => {
+    if (isSuccess) {
+      createRoom();
+    }
+  }, [isSuccess]);
+
+  const createRoom = async () => {
+    if (user) {
+      setIsLoading(true);
+      const data = { roomId: nanoid(), adminId: user._id };
+      try {
+        // prettier-ignore
+        await asyncSocket<any>(socket,"create-room",data.roomId,data.adminId);
+        router.push(`/meeting/${data.roomId}`);
+      } catch (err) {
+        console.log(err);
+        setIsLoading(false);
+      }
+    } else {
+      setModalState({ showAuthModal: true });
+    }
+  };
+
   return (
     <div className="flex gap-5 sm:flex-col">
       <button
         disabled={isLoading}
         onClick={async () => {
-          if (user) {
-            setIsLoading(true);
-            const data = { roomId: nanoid(), adminId: user._id };
-            try {
-              // prettier-ignore
-              await asyncSocket<any>(socket,"create-room",data.roomId,data.adminId);
-              router.push(`/meeting/${data.roomId}`);
-            } catch (err) {
-              console.log(err);
-              setIsLoading(false);
-            }
-          } else {
-            setModalState({ showAuthModal: true });
-          }
+          mutate();
         }}
-        className="bg-colorPrimary sm:justify-center flex items-center gap-2 text-colorBg font-medium hover:bg-colorPrimaryLight py-3 rounded-md px-6 text-base"
+        className="bg-colorPrimary w-full max-w-[170.38px] sm:justify-center flex items-center gap-2 text-colorBg font-medium hover:bg-colorPrimaryLight py-3 rounded-md px-6 text-base"
       >
-        <BiSolidVideoPlus className="h-5 w-5" />
-        <div>New Meeting</div>
+        {isLoading ? (
+          <div className="w-full flex justify-center">
+            <LoadingCircle />
+          </div>
+        ) : (
+          <>
+            <BiSolidVideoPlus className="h-5 w-5" />
+            <div>New Meeting</div>
+          </>
+        )}
       </button>
 
       <div className="flex-1 flex gap-1 items-center">

@@ -1,5 +1,7 @@
 import { Consumer, AppData } from "mediasoup-client/lib/types";
 
+export type User = { name: string; socketId: string; id: string };
+
 export type Peer = {
   name: string;
   socketId: string;
@@ -17,7 +19,12 @@ export type ConsumerData = {
   };
 };
 
-export interface RemoteProducer {
+export type RemoteProducer = {
   producers: string[];
-  user: { name: string; socketId: string; id: string };
-}
+  user: User;
+};
+
+export type Message = {
+  user: User;
+  text: string;
+};

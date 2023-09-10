@@ -133,3 +133,13 @@ input[type="number"] {
     grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   }
 }
+
+.flip-video {
+  transform: scale(-1, 1);
+  -moz-transform: scale(-1, 1); /* For older Firefox browsers */
+  -webkit-transform: scale(
+    -1,
+    1
+  ); /* For older Chrome, Safari, and other Webkit browsers */
+  -o-transform: scale(-1, 1); /* For older Opera browsers */
+}

@@ -88,3 +88,9 @@ export const logout = catchAsync(
     res.status(200).json({});
   }
 );
+
+export const check = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.status(200).json({});
+  }
+);

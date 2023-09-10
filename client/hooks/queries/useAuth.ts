@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { Mutation, useMutation, useQuery } from "@tanstack/react-query";
 import useAxios from "../useAxios";
 import { useRouter } from "next/navigation";
 import useStore from "@/store/useStore";
@@ -221,6 +221,22 @@ export const useValidateForgotPassword = () => {
           title: "",
         },
       });
+    },
+  });
+};
+
+export const useCheckAuth = () => {
+  const api = useAxios();
+  const setModalState = useStore((state) => state.setModalState);
+
+  const queryFnc = async () => {
+    const { data } = await api.post(`/auth/check`);
+    return data;
+  };
+
+  return useMutation(queryFnc, {
+    onError: () => {
+      setModalState({ showAuthModal: true });
     },
   });
 };

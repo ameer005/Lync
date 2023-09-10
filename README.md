@@ -45,13 +45,14 @@ Before you begin, make sure you have the following prerequisites installed:
 ## Setup
 
 1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/ameer005/lync.git
-   cd lync
-   ```
-2. **Install Dependencies:**
 
    ```bash
+   git clone https://github.com/ameer005/lync.git
+   ```
+
+2. **Install Dependencies:**
+
+   ```plaintext
    cd server
    npm install
 

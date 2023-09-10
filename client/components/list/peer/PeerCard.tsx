@@ -87,7 +87,9 @@ const PeerCard = ({ data }: ComponentProps) => {
         <video
           muted={me.id === data.user.id}
           autoPlay
-          className="absolute h-full w-full inset-0 object-cover"
+          className={`absolute h-full w-full inset-0 object-cover ${
+            !data.isScreen && "flip-video"
+          }`}
           ref={videoRef}
         ></video>
       )}

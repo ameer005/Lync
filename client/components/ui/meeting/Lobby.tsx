@@ -77,7 +77,7 @@ const Lobby = ({ roomId, roomClient }: ComponentProps) => {
             {localMedia.mediaStream ? (
               <>
                 <video
-                  className="h-full w-full object-cover responsive-video"
+                  className="h-full flip-video w-full object-cover responsive-video"
                   autoPlay
                   muted
                   playsInline

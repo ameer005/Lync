@@ -3,7 +3,7 @@ const LoadingCircle = () => {
     <div className="flex items-center justify-center gap-4">
       <svg
         role="status"
-        className="dark:text-colorNeutral fill-colorPrimary h-5 w-5 animate-spin text-gray-200"
+        className=" fill-colorPrimary h-5 w-5 animate-spin text-colorBg"
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

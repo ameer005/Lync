@@ -1,7 +1,7 @@
 import { CbStatus, RoomUser, SocketEvents } from "../../types/socket-types";
 import { IO } from "../../types/shared";
 import { getMediasoupRouter } from "../mediasoup/worker";
-import Room from "./Room";
+import Room, { Message } from "./Room";
 import Peer from "./Peer";
 import {
   addRoom,
@@ -328,9 +328,13 @@ const webSockets = async (io: IO) => {
       io.to(socketId).emit(SocketEvents.LISTEN_REMOVE_USER, socketId);
     });
 
-    // socket.on("send-message", (roomId, data) => {
-    //   io.to(roomId).emit("get-message", data);
-    // });
+    socket.on("send-message", (roomId: string, data: Message) => {
+      const room = getRoom(roomId);
+      if (!room) return;
+
+      room.addMessage(data);
+      // io.to(roomId).emit("get-message", data);
+    });
 
     socket.on("disconnect", () => {});
   });
