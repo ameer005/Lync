@@ -84,5 +84,3 @@ Before you begin, make sure you have the following prerequisites installed:
 ## Continued Development
 
 - **In-Meeting Real-Time Chat:** I'm working on integrating a real-time chat feature that will allow participants to communicate within meetings. Whether it's sharing important links, discussing topics, or coordinating tasks
-
-Stay tuned for updates as we continue to enhance the Lync experience with real-time communication capabilities!

@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import RoomClient from "@/lib/roomClient";
 import useStore from "@/store/useStore";
+import { isMobile } from "react-device-detect";
 import {
   BiVideo,
   BiVideoOff,
@@ -44,21 +45,25 @@ const Controls = ({ roomClient, roomId }: ComponentProps) => {
         }}
       />
 
-      <VideoControlBtn
-        className={`text-2xl ${roomClient.sharingScreen ? "bg-zinc-400" : ""}`}
-        falseLogo={<BiMicrophoneOff />}
-        state={true}
-        trueLogo={<MdOutlineScreenShare />}
-        onClick={async () => {
-          if (roomClient.sharingScreen) {
-            roomClient.cleanLocalMedia("screen");
-          } else {
-            await roomClient.shareScreen();
-            await roomClient.produce("screen-video");
-            // await roomClient.produce("screen-audio");
-          }
-        }}
-      />
+      {!isMobile ? (
+        <VideoControlBtn
+          className={`text-2xl ${
+            roomClient.sharingScreen ? "bg-zinc-400" : ""
+          }`}
+          falseLogo={<BiMicrophoneOff />}
+          state={true}
+          trueLogo={<MdOutlineScreenShare />}
+          onClick={async () => {
+            if (roomClient.sharingScreen) {
+              roomClient.cleanLocalMedia("screen");
+            } else {
+              await roomClient.shareScreen();
+              await roomClient.produce("screen-video");
+              // await roomClient.produce("screen-audio");
+            }
+          }}
+        />
+      ) : null}
 
       <VideoControlBtn
         className={`text-2xl bg-colorError ${localPeer.shareCam ? "" : ""}`}

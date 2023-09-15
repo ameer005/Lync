@@ -48,7 +48,7 @@ const RoomMenu = () => {
         onClick={async () => {
           mutate();
         }}
-        className="bg-colorPrimary w-full max-w-[170.38px] sm:justify-center flex items-center gap-2 text-colorBg font-medium hover:bg-colorPrimaryLight py-3 rounded-md px-6 text-base"
+        className="bg-colorPrimary w-full max-w-[170.38px] sm:max-w-none sm:justify-center flex items-center gap-2 text-colorBg font-medium hover:bg-colorPrimaryLight py-3 rounded-md px-6 text-base"
       >
         {isLoading ? (
           <div className="w-full flex justify-center">
