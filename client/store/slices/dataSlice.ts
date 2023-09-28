@@ -3,11 +3,10 @@ import { StateCreator } from "zustand";
 import { io, Socket } from "socket.io-client";
 
 let URL: string;
-
 if (process.env.NODE_ENV !== "production") {
-  URL = "http://127.0.0.1:5000/api/v1";
+  URL = "http://127.0.0.1:5000";
 } else {
-  URL = `${process.env.NEXT_PUBLIC_BACKEND_URL!}/api/v1`;
+  URL = `${process.env.NEXT_PUBLIC_BACKEND_URL!}`;
 }
 
 export interface DataSlice {
