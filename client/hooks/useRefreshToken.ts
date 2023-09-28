@@ -1,10 +1,11 @@
 import axios from "axios";
 import useStore from "../store/useStore";
 
-let URL = `${process.env.BACKEND_URL}/api/v1`;
-
+let URL: string;
 if (process.env.NODE_ENV !== "production") {
   URL = "http://127.0.0.1:5000/api/v1";
+} else {
+  URL = `${process.env.NEXT_PUBLIC_BACKEND_URL!}/api/v1`;
 }
 
 const useRefreshToken = () => {
