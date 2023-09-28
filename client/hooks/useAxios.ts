@@ -3,7 +3,7 @@ import useStore from "../store/useStore";
 import useRefreshToken from "./useRefreshToken";
 import { useEffect } from "react";
 
-let URL = `${process.env.BACKEND_URL}/api/v1`;
+let URL = `${process.env.NEXT_PUBLIC_BACKEND_URL!}/api/v1`;
 
 if (process.env.NODE_ENV !== "production") {
   URL = "http://127.0.0.1:5000/api/v1";
