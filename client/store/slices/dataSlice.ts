@@ -2,7 +2,7 @@ import { StateCreator } from "zustand";
 
 import { io, Socket } from "socket.io-client";
 
-let URL = process.env.BACKEND_URL!;
+let URL = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
 if (process.env.NODE_ENV !== "production") {
   URL = "http://127.0.0.1:5000";
