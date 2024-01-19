@@ -33,14 +33,14 @@ if (process.env.NODE_ENV !== "production") {
     cors({
       credentials: true,
       origin: true,
-    })
+    }),
   );
 } else {
   app.use(
     cors({
       credentials: true,
       origin: true,
-    })
+    }),
   );
 }
 app.use(morganMiddleware);
@@ -76,9 +76,15 @@ app.use(errorHandlerMiddleware);
 const start = async () => {
   try {
     await connect(process.env.MONGO_URL!);
-    server.listen(config.https.listenPort, () => {
-      console.log(`Server is running on port ${config.https.listenPort}`);
-    });
+    if (process.env.NODE_ENV === "production") {
+      server.listen(config.https.listenPort, () => {
+        console.log(`Server is running on port ${config.https.listenPort}`);
+      });
+    } else {
+      server.listen(config.https.listenPort, "0.0.0.0", () => {
+        console.log(`Server is running on port ${config.https.listenPort}`);
+      });
+    }
 
     await createWorkers();
   } catch (error) {
