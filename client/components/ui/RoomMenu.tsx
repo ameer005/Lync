@@ -57,7 +57,7 @@ const RoomMenu = () => {
         ) : (
           <>
             <BiSolidVideoPlus className="h-5 w-5" />
-            <div>New Meeting</div>
+            <div className="shrink-0">New Meeting</div>
           </>
         )}
       </button>

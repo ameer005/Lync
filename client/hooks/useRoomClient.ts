@@ -12,7 +12,6 @@ const useRoomClient = ({ roomClient, roomId }: ComponentProps) => {
   const localMedia = useStore((state) => state.localMedia);
   const localMediaScreen = useStore((state) => state.localMediaScreen);
   const socket = useStore((state) => state.socket);
-  const peers = useStore((state) => state.peers);
   const setMeetingData = useStore((state) => state.setMeetingData);
 
   useEffect(() => {
@@ -31,12 +30,6 @@ const useRoomClient = ({ roomClient, roomId }: ComponentProps) => {
       });
     };
   }, []);
-
-  // useEffect(() => {
-  //   if (peers) {
-  //     console.log("peers: ", peers);
-  //   }
-  // }, [peers]);
 
   useEffect(() => {
     return () => {
