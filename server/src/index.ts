@@ -39,10 +39,11 @@ if (process.env.NODE_ENV !== "production") {
   app.use(
     cors({
       credentials: true,
-      origin: true,
+      origin: [process.env.FRONTEND_URL!],
     }),
   );
 }
+
 app.use(morganMiddleware);
 app.use(compression());
 app.use(cookieParser());
