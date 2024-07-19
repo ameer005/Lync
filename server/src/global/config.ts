@@ -1,7 +1,9 @@
 import { WorkerLogTag } from "mediasoup/node/lib/types";
 import { RtpCodecCapability } from "mediasoup/node/lib/RtpParameters";
 import { TransportListenIp } from "mediasoup/node/lib/Transport";
+import dotenv from "dotenv";
 import os from "os";
+dotenv.config();
 
 export const config = {
   domain: process.env.DOMAIN || "localhost",
