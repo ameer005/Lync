@@ -13,6 +13,7 @@ import { Server } from "socket.io";
 import { config } from "./global/config";
 import { createWorkers } from "./lib/mediasoup/worker";
 import morganMiddleware from "./middleware/morganMiddleware";
+dotenv.config();
 
 const app = express();
 const server = createServer(app);
@@ -25,8 +26,6 @@ const io = new Server(server, {
 import userRouter from "./routes/user/userRoutes";
 import authRouter from "./routes/auth/authRoutes";
 import { webSockets } from "./lib/socket/web-sockets";
-
-dotenv.config();
 
 if (process.env.NODE_ENV !== "production") {
   app.use(
