@@ -53,7 +53,7 @@ class RoomClient {
       this.socket,
       "join-room",
       this.roomId,
-      payload
+      payload,
     );
 
     if (payload.id === this.roomAdminId) {
@@ -71,6 +71,7 @@ class RoomClient {
       const { localMedia, localMediaScreen } = useStore.getState();
       let params: ProducerOptions;
 
+      // convert it to switch statement
       if (type === "video") {
         params = {
           track: localMedia.videoTrack!,
@@ -169,7 +170,7 @@ class RoomClient {
           this.roomId,
           this.consumerTransport?.id,
           producerId,
-          rtpCapabilities
+          rtpCapabilities,
         );
 
         if (!this.consumerTransport) return;
@@ -187,7 +188,7 @@ class RoomClient {
           this.socket,
           "resume-consumer",
           this.roomId,
-          consumer.id
+          consumer.id,
         );
 
         // updateConsumers({ key: consumer.id, value: { consumer, user } });
@@ -211,7 +212,7 @@ class RoomClient {
     const rtpCapabilities = await asyncSocket<RtpCapabilities>(
       this.socket,
       "get-router-rtp-capabilities",
-      this.roomId
+      this.roomId,
     );
 
     await this.mediasoupDevice.load({ routerRtpCapabilities: rtpCapabilities });
@@ -249,7 +250,7 @@ class RoomClient {
         const data = await asyncSocket<TransportOptions>(
           this.socket,
           "create-webrtc-transport",
-          this.roomId
+          this.roomId,
         );
 
         let producerTransport = this.mediasoupDevice.createSendTransport(data);
@@ -266,7 +267,7 @@ class RoomClient {
         const data = await asyncSocket<TransportOptions>(
           this.socket,
           "create-webrtc-transport",
-          this.roomId
+          this.roomId,
         );
 
         let consumerTransport = this.mediasoupDevice.createRecvTransport(data);
@@ -293,7 +294,7 @@ class RoomClient {
             "connect-transport",
             this.roomId,
             this.producerTransport!.id,
-            dtlsParameters
+            dtlsParameters,
           );
 
           callback();
@@ -301,7 +302,7 @@ class RoomClient {
           console.error(err);
           errback(err);
         }
-      }
+      },
     );
 
     this.producerTransport.on(
@@ -314,13 +315,13 @@ class RoomClient {
             this.roomId,
             kind,
             rtpParameters,
-            this.producerTransport!.id
+            this.producerTransport!.id,
           );
 
           const producers = await asyncSocket<RemoteProducer[]>(
             this.socket,
             "get-producers",
-            this.roomId
+            this.roomId,
           );
 
           callback({ id: producerId });
@@ -329,13 +330,13 @@ class RoomClient {
           producers.forEach((producer) =>
             this.consume({
               remoteProducer: producer,
-            })
+            }),
           );
         } catch (err: any) {
           console.error(err);
           errorback(err);
         }
-      }
+      },
     );
 
     this.producerTransport.on("connectionstatechange", (state) => {
@@ -370,7 +371,7 @@ class RoomClient {
             "connect-transport",
             this.roomId,
             this.consumerTransport!.id,
-            dtlsParameters
+            dtlsParameters,
           );
 
           console.log(message);
@@ -379,7 +380,7 @@ class RoomClient {
           console.error(err);
           errback(err);
         }
-      }
+      },
     );
 
     this.consumerTransport.on("connectionstatechange", async (state) => {

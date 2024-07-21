@@ -28,6 +28,7 @@ class Room {
   constructor(roomId: string, admin_id: string, io: IO, router: Router) {
     this.roomId = roomId;
     this.io = io;
+    // User's ID in DB
     this.admin = admin_id;
     this.router = router;
   }
@@ -62,7 +63,6 @@ class Room {
       preferUdp: true,
       initialAvailableOutgoingBitrate,
     });
-    console.log(config.mediasoup.webRtcTransportOptions.listenIps);
 
     if (maxIncomingBitrate) {
       try {
@@ -84,7 +84,7 @@ class Room {
     });
 
     logger.info(
-      `Adding transport ${JSON.stringify({ transportId: transport.id })}`
+      `Adding transport ${JSON.stringify({ transportId: transport.id })}`,
     );
     this.peers.get(socketId)?.addTransport(transport);
 
@@ -102,7 +102,7 @@ class Room {
   async connectPeerTransport(
     socketId: string,
     transportId: string,
-    dtlsParameters: DtlsParameters
+    dtlsParameters: DtlsParameters,
   ) {
     if (!this.peers.has(socketId)) return;
     this.peers.get(socketId)?.connectTransport(transportId, dtlsParameters);
@@ -112,14 +112,14 @@ class Room {
     socketId: string,
     producerTransportId: string,
     rtpParameters: RtpParameters,
-    kind: MediaKind
+    kind: MediaKind,
   ) {
     return new Promise(async (resolve, _) => {
       const peer = this.peers.get(socketId);
       let producer = await peer?.createProducer(
         producerTransportId,
         rtpParameters,
-        kind
+        kind,
       );
 
       if (!producer) return;
@@ -141,7 +141,7 @@ class Room {
     socketId: string,
     consumerTransportId: string,
     producerId: string,
-    rtpCapabilities: RtpCapabilities
+    rtpCapabilities: RtpCapabilities,
   ) {
     if (!this.router.canConsume({ producerId, rtpCapabilities })) {
       logger.error("cannot consume");
@@ -160,7 +160,7 @@ class Room {
         `Consumer closed due to producer close event ${JSON.stringify({
           name: `${this.peers.get(socketId)?.name}`,
           consumer_id: `${consumer.id}`,
-        })}`
+        })}`,
       );
 
       // TODO maybe delete consumer from user's array too

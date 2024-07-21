@@ -72,7 +72,7 @@ const RoomMenu = () => {
           />
 
           <BsKeyboardFill className="h-5 w-5 text-zinc-400 absolute left-3 top-[50%] -translate-y-[50%]" />
-{/*sdkjfkl*/}
+          {/*sdkjfkl*/}
         </label>
         {roomInput ? (
           <button

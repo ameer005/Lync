@@ -1,6 +1,5 @@
 import Peer from "../lib/socket/Peer";
 import Room from "../lib/socket/Room";
-import { Consumer, Producer, Transport } from "mediasoup/node/lib/types";
 
 const rooms: Map<string, Room> = new Map();
 
