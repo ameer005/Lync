@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "picture" DROP NOT NULL,
+ALTER COLUMN "activationCode" DROP NOT NULL,
+ALTER COLUMN "resetPassWordAt" DROP NOT NULL;

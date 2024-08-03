@@ -8,8 +8,6 @@ enum TokenExpiration {
   Refresh = 7 * 24 * 60 * 60,
 }
 
-const isProduction = process.env.NODE_ENV === "production";
-
 const defaultCookieOptions: CookieOptions = {
   httpOnly: true,
   secure: true,
@@ -27,31 +25,18 @@ export const buildToken = (userId: string) => {
     process.env.ACCESS_TOKEN_SECRET!,
     {
       expiresIn: TokenExpiration.Access,
-    }
+    },
   );
 
   const refreshToken = jwt.sign(
     refreshPayload,
     process.env.REFRESH_TOKEN_SECRET!,
-    { expiresIn: TokenExpiration.Refresh }
+    { expiresIn: TokenExpiration.Refresh },
   );
 
   return { accessToken, refreshToken };
 };
 
-// export const setTokens = (res: Response, access: string, refresh?: string) => {
-//   res.cookie(Cookie.AccessToken, access, {
-//     ...defaultCookieOptions,
-//     maxAge: TokenExpiration.Access * 1000,
-//   });
-
-//   if (refresh) {
-//     res.cookie(Cookie.RefreshToken, refresh, {
-//       ...defaultCookieOptions,
-//       maxAge: TokenExpiration.Refresh * 1000,
-//     });
-//   }
-// };
 export const setTokens = (res: Response, refresh?: string) => {
   if (refresh) {
     res.cookie(Cookie.RefreshToken, refresh, {

@@ -1,8 +1,5 @@
-import mongoose from "mongoose";
+import { PrismaClient } from "@prisma/client";
 
-const connect = (url: string): Promise<typeof mongoose> => {
-  mongoose.set("strictQuery", true);
-  return mongoose.connect(url);
-};
+const prisma = new PrismaClient();
 
-export default connect;
+export { prisma };
